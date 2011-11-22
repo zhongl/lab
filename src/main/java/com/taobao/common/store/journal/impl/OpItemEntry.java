@@ -7,12 +7,12 @@ import com.taobao.common.store.journal.OpItem;
 
 
 /**
- * 
- * ´æ´¢ÔÚÓ²ÅÌÉÏµÄOpItem
- * 
+ *
+ * å­˜å‚¨åœ¨ç¡¬ç›˜ä¸Šçš„OpItem
+ *
  * @author boyan
- * 
- * @since 1.0, 2009-10-20 ÉÏÎç11:26:37
+ *
+ * @since 1.0, 2009-10-20 ä¸Šåˆ11:26:37
  */
 
 public class OpItemEntry {
@@ -20,7 +20,7 @@ public class OpItemEntry {
     private OpItem opItem;
     private boolean deleted;
     private byte channelIndex;
-    // ¹«ÓÃµÄ¶ÁÈ¡deleted×Ö¶ÎµÄ buffer
+    // å…¬ç”¨çš„è¯»å–deletedå­—æ®µçš„ buffer
     static final byte[] deltedBuffer = new byte[1];
 
 
@@ -30,7 +30,7 @@ public class OpItemEntry {
 
 
     public void unload() {
-        this.opItem = null; // Ïû³ıÒıÓÃ£¬ÈÃGC»ØÊÕ
+        this.opItem = null; // æ¶ˆé™¤å¼•ç”¨ï¼Œè®©GCå›æ”¶
     }
 
 
@@ -45,7 +45,7 @@ public class OpItemEntry {
 
 
     public void load(MappedByteBuffer mappedByteBuffer, int offset, boolean loadItem) throws IOException {
-        // ÒÑ¾­É¾³ı£¬²»ÓÃ¼ÌĞø¶Á
+        // å·²ç»åˆ é™¤ï¼Œä¸ç”¨ç»§ç»­è¯»
         if (this.deleted) {
             return;
         }

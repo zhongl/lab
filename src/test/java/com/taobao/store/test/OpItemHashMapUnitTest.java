@@ -19,12 +19,12 @@ import com.taobao.common.store.util.UniqId;
 
 
 /**
- * 
- * 
- * 
+ *
+ *
+ *
  * @author boyan
- * 
- * @since 1.0, 2009-10-20 ÏÂÎç03:28:21
+ *
+ * @since 1.0, 2009-10-20 ä¸‹åˆ03:28:21
  */
 
 public class OpItemHashMapUnitTest {
@@ -70,7 +70,7 @@ public class OpItemHashMapUnitTest {
             OpItem opItem = new OpItem();
             opItem.setKey(key.getData());
             opItem.setLength(2);
-            opItem.setNumber(10);
+            opItem.setFileSerialNumber(10);
             opItem.setOffset(10000);
             opItem.setOp((byte) 0);
             Assert.assertNull(this.map.get(key));
@@ -93,7 +93,7 @@ public class OpItemHashMapUnitTest {
             OpItem opItem = new OpItem();
             opItem.setKey(key.getData());
             opItem.setLength(2);
-            opItem.setNumber(10);
+            opItem.setFileSerialNumber(10);
             opItem.setOffset(10000);
             opItem.setOp((byte) 0);
             Assert.assertNull(this.map.get(key));
@@ -129,7 +129,7 @@ public class OpItemHashMapUnitTest {
             OpItem opItem = new OpItem();
             opItem.setKey(key.getData());
             opItem.setLength(2);
-            opItem.setNumber(10);
+            opItem.setFileSerialNumber(10);
             opItem.setOffset(10000);
             opItem.setOp((byte) 0);
             Assert.assertNull(this.map.get(key));
@@ -140,18 +140,18 @@ public class OpItemHashMapUnitTest {
             }
         }
         Assert.assertEquals(keys.size(), map.size());
-        System.out.println("Ìí¼Ó" + count + "¸öÔªËØºÄÊ±£º" + (System.currentTimeMillis() - start));
+        System.out.println("æ·»åŠ " + count + "ä¸ªå…ƒç´ è€—æ—¶ï¼š" + (System.currentTimeMillis() - start));
         start = System.currentTimeMillis();
         for (int i = 0; i < keys.size(); i++) {
             Assert.assertEquals(items.get(i), this.map.get(keys.get(i)));
         }
-        System.out.println("²éÑ¯" + count + "¸öÔªËØºÄÊ±£º" + (System.currentTimeMillis() - start));
+        System.out.println("æŸ¥è¯¢" + count + "ä¸ªå…ƒç´ è€—æ—¶ï¼š" + (System.currentTimeMillis() - start));
         start = System.currentTimeMillis();
         for (int i = 0; i < keys.size(); i++) {
             this.map.remove(keys.get(i));
             Assert.assertNull(this.map.get(keys.get(i)));
         }
-        System.out.println("É¾³ı" + count + "¸öÔªËØºÄÊ±£º" + (System.currentTimeMillis() - start));
+        System.out.println("åˆ é™¤" + count + "ä¸ªå…ƒç´ è€—æ—¶ï¼š" + (System.currentTimeMillis() - start));
     }
 
 

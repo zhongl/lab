@@ -30,7 +30,7 @@ import java.util.Iterator;
  * 
  * @author boyan
  * 
- * @since 1.0, 2009-12-11 ионГ11:17:22
+ * @since 1.0, 2009-12-11 11:17:22
  */
 public interface Store {
 

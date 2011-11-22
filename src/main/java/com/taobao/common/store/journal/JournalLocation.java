@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 
 /**
- * store4j ÈÕÖ¾´æ´¢checkPointµÄÎ»ÖÃ
+ * store4j æ—¥å¿—å­˜å‚¨checkPointçš„ä½ç½®
  *
- * @author boyan(boyan@taobao.com)£¬shuihan
+ * @author boyan(boyan@taobao.com)ï¼Œshuihan
  * @date 2011-8-22
  *
  */

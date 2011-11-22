@@ -20,7 +20,7 @@ import com.taobao.common.store.util.BytesKey;
 import com.taobao.common.store.util.SerializerUtil;
 
 /**
- * ¶¨Ê±¸üĞÂ×îĞ¡µÄnumberºÍ×îĞ¡µÄoffset
+ * å®šæ—¶æ›´æ–°æœ€å°çš„numberå’Œæœ€å°çš„offset
  * @author shuihan
  * @date 2010-9-21
  */
@@ -56,7 +56,7 @@ public class Checkpoint{
 
 
     /**
-     * ²âÊÔÓÃ
+     * æµ‹è¯•ç”¨
      * @param addDatas
      */
     public void setAddDatas(Map<BytesKey,JournalLocation> addDatas){
@@ -74,7 +74,7 @@ public class Checkpoint{
         scheduleTP.scheduleAtFixedRate(new Runnable(){
 
             public void run() {
-               check();
+                check();
             }}, 30, 30, TimeUnit.MINUTES);
     }
 
@@ -95,7 +95,7 @@ public class Checkpoint{
         ByteBuffer buf = ByteBuffer.allocate((int)checkPointFile.length());
         channel.read(buf, 0);
         if(buf.hasRemaining()){
-            logger.warn("¶ÁÈ¡checkpoint´íÎó£¡");
+            logger.warn("è¯»å–checkpointé”™è¯¯ï¼");
             checkPointFile.delete();
             return;
         }
@@ -112,7 +112,7 @@ public class Checkpoint{
             input.close();
         }
 
-        logger.warn("end to recover the checkpoint,number="+this.journalLocation.getNumber()+",offset="+this.journalLocation.getOffset());
+        logger.warn("end to recover the checkpoint,fileSerialNumber="+this.journalLocation.getNumber()+",offset="+this.journalLocation.getOffset());
 
     }
 
@@ -163,7 +163,7 @@ public class Checkpoint{
             saveLoaction();
         }
         catch (Exception e) {
-           logger.error("±£´æ check point Ê§°Ü!", e);
+            logger.error("ä¿å­˜ check point å¤±è´¥!", e);
         }
     }
 
@@ -181,9 +181,9 @@ public class Checkpoint{
         FileChannel channel = outPut.getChannel();
         int writeBytes = channel.write(buf,0);
         if(writeBytes != datas.length){
-            logger.warn("checkpoint Ğ´Èë´ÅÅÌÊ§°Ü!");
+            logger.warn("checkpoint å†™å…¥ç£ç›˜å¤±è´¥!");
         }
-        logger.warn("Ğ´Èëcheckpoint,number="+this.journalLocation.number+",offset="+this.journalLocation.offset);
+        logger.warn("å†™å…¥checkpoint,fileSerialNumber="+this.journalLocation.number+",offset="+this.journalLocation.offset);
         channel.force(true);
         if(channel != null){
             channel.close();

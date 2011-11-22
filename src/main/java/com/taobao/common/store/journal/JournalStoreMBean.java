@@ -23,96 +23,96 @@ import java.io.IOException;
 
 
 /**
- * ÈÕÖ¾·½Ê½´æ´¢µÄMBean
- * 
+ * æ—¥å¿—æ–¹å¼å­˜å‚¨çš„MBean
+ *
  * @author dogun (yuexuqiang at gmail.com)
  */
 public interface JournalStoreMBean {
 
     /**
-     * »ñµÃËùÓĞÓĞĞ§Êı¾İÎÄ¼şµÄĞÅÏ¢
-     * 
-     * @return ËùÓĞÓĞĞ§Êı¾İÎÄ¼şµÄĞÅÏ¢
+     * è·å¾—æ‰€æœ‰æœ‰æ•ˆæ•°æ®æ–‡ä»¶çš„ä¿¡æ¯
+     *
+     * @return æ‰€æœ‰æœ‰æ•ˆæ•°æ®æ–‡ä»¶çš„ä¿¡æ¯
      */
     String getDataFilesInfo();
 
 
     /**
-     * »ñµÃËùÓĞÓĞĞ§ÈÕÖ¾ÎÄ¼şµÄĞÅÏ¢
-     * 
-     * @return ËùÓĞÓĞĞ§ÈÕÖ¾ÎÄ¼şµÄĞÅÏ¢
+     * è·å¾—æ‰€æœ‰æœ‰æ•ˆæ—¥å¿—æ–‡ä»¶çš„ä¿¡æ¯
+     *
+     * @return æ‰€æœ‰æœ‰æ•ˆæ—¥å¿—æ–‡ä»¶çš„ä¿¡æ¯
      */
     String getLogFilesInfo();
 
 
     /**
-     * »ñÈ¡µ±Ç°µÄÎÄ¼ş±àºÅ
-     * 
-     * @return µ±Ç°µÄÎÄ¼ş±àºÅ
+     * è·å–å½“å‰çš„æ–‡ä»¶ç¼–å·
+     *
+     * @return å½“å‰çš„æ–‡ä»¶ç¼–å·
      */
     int getNumber();
 
 
     /**
-     * »ñÈ¡´æ´¢µÄÂ·¾¶
-     * 
+     * è·å–å­˜å‚¨çš„è·¯å¾„
+     *
      * @return the path
      */
     String getPath();
 
 
     /**
-     * »ñÈ¡´æ´¢µÄÃû×Ö
-     * 
+     * è·å–å­˜å‚¨çš„åå­—
+     *
      * @return the name
      */
     String getName();
 
 
     /**
-     * »ñÈ¡µ±Ç°Êı¾İÎÄ¼şĞÅÏ¢
-     * 
-     * @return µ±Ç°Êı¾İÎÄ¼şĞÅÏ¢
+     * è·å–å½“å‰æ•°æ®æ–‡ä»¶ä¿¡æ¯
+     *
+     * @return å½“å‰æ•°æ®æ–‡ä»¶ä¿¡æ¯
      */
     String getDataFileInfo();
 
 
     /**
-     * »ñÈ¡µ±Ç°ÈÕÖ¾ÎÄ¼şĞÅÏ¢
-     * 
-     * @return µ±Ç°ÈÕÖ¾ÎÄ¼şĞÅÏ¢
+     * è·å–å½“å‰æ—¥å¿—æ–‡ä»¶ä¿¡æ¯
+     *
+     * @return å½“å‰æ—¥å¿—æ–‡ä»¶ä¿¡æ¯
      */
     String getLogFileInfo();
 
 
     /**
-     * ²é¿´Ë÷ÒıµÄĞÅÏ¢¡£<b>×¢Òâ:</b>¸Ã²Ù×÷¿ÉÄÜ»á³Å±©ÄÚ´æ
-     * 
-     * @return ËùÓĞµÄË÷ÒıĞÅÏ¢
+     * æŸ¥çœ‹ç´¢å¼•çš„ä¿¡æ¯ã€‚<b>æ³¨æ„:</b>è¯¥æ“ä½œå¯èƒ½ä¼šæ’‘æš´å†…å­˜
+     *
+     * @return æ‰€æœ‰çš„ç´¢å¼•ä¿¡æ¯
      */
     String viewIndexMap();
 
 
     /**
-     * »ñµÃÊı¾İµÄ¸öÊı
-     * 
-     * @return Êı¾İµÄ¸öÊı
+     * è·å¾—æ•°æ®çš„ä¸ªæ•°
+     *
+     * @return æ•°æ®çš„ä¸ªæ•°
      * @throws IOException
      */
     long getSize() throws IOException;
-    
+
     /**
-     *  ¶ÔÊı¾İÎÄ¼ş½øĞĞ¼ì²é£¬²¢×÷³öÏàÓ¦µÄ´¦Àí
-     *  
+     *  å¯¹æ•°æ®æ–‡ä»¶è¿›è¡Œæ£€æŸ¥ï¼Œå¹¶ä½œå‡ºç›¸åº”çš„å¤„ç†
+     *
      * @throws IOException
      */
     void check() throws IOException;
-    
+
     long getIntervalForRemove();
-    
+
     void setIntervalForRemove(long interval);
-    
+
     long getIntervalForCompact();
-    
+
     void setIntervalForCompact(long interval);
 }

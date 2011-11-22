@@ -5,9 +5,9 @@ import java.util.LinkedHashMap;
 
 /**
  * *
- * 
+ *
  * @author dennis
- * 
+ *
  * @param <K>
  * @param <V>
  */
@@ -48,7 +48,7 @@ public class LRUHashMap<K, V> extends LinkedHashMap<K, V> {
         }
         boolean result = size() > maxCapacity;
         if (result && handler != null) {
-            // ³É¹¦´æÈë´ÅÅÌ£¬¼´´ÓÄÚ´æÒÆ³ı£¬·ñÔò¼ÌĞø±£ÁôÔÚ±£´æ
+            // æˆåŠŸå­˜å…¥ç£ç›˜ï¼Œå³ä»å†…å­˜ç§»é™¤ï¼Œå¦åˆ™ç»§ç»­ä¿ç•™åœ¨ä¿å­˜
             return handler.process(eldest);
         }
         return result;

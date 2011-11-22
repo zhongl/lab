@@ -254,7 +254,7 @@ public class JournalStoreTest {
 
         this.store.sync();
         Thread.sleep(100);
-        
+
         RandomAccessFile f = new RandomAccessFile(this.getFilePrefix() + "1.log", "r");
         f.seek(f.length() - OpItem.LENGTH);
         byte[] opItem = new byte[OpItem.LENGTH];
@@ -312,7 +312,7 @@ public class JournalStoreTest {
 
         this.store.sync();
         Thread.sleep(500);
-        
+
         RandomAccessFile f = new RandomAccessFile(this.getFilePrefix() + "1.log", "r");
         f.seek(f.length() - OpItem.LENGTH);
         byte[] opItem = new byte[OpItem.LENGTH];
@@ -331,7 +331,7 @@ public class JournalStoreTest {
 
         this.store.sync();
         Thread.sleep(500);
-        
+
         Assert.assertFalse(new File(this.getFilePrefix() + "1").exists());
         Assert.assertFalse(new File(this.getFilePrefix() + "1.log").exists());
 
@@ -384,7 +384,7 @@ public class JournalStoreTest {
         this.store.remove(key2);
         this.store.sync();
         Thread.sleep(500);
-        
+
         Assert.assertFalse(new File(this.getFilePrefix() + "1").exists());
         Assert.assertFalse(new File(this.getFilePrefix() + "1.log").exists());
 
@@ -509,7 +509,7 @@ public class JournalStoreTest {
     }
 
 
-    
+
     public void testLoadHeavy() throws Exception {
         this.load(8, 2000, 5);
     }

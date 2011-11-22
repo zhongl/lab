@@ -15,12 +15,12 @@ import com.taobao.common.store.util.BytesKey;
 
 
 /**
- * 
- * »ùÓÚ¿ª·ÅµØÖ··¨£¬´æ´¢ÓÚÓ²ÅÌÉÏµÄHashMap
- * 
+ *
+ * åŸºäºå¼€æ”¾åœ°å€æ³•ï¼Œå­˜å‚¨äºç¡¬ç›˜ä¸Šçš„HashMap
+ *
  * @author boyan
- * 
- * @since 1.0, 2009-10-20 ÉÏÎç11:27:07
+ *
+ * @since 1.0, 2009-10-20 ä¸Šåˆ11:27:07
  */
 
 public class OpItemHashMap {
@@ -52,7 +52,7 @@ public class OpItemHashMap {
 
 
     private int hash(int keyHash, int i) {
-        return abs(hash1(keyHash) + i * hash2(keyHash)) % table.length; // Ë«ÖØÉ¢ÁĞ
+        return abs(hash1(keyHash) + i * hash2(keyHash)) % table.length; // åŒé‡æ•£åˆ—
     }
 
 
@@ -89,7 +89,7 @@ public class OpItemHashMap {
         int offset = calcOffset(j);
         int i = 0;
         int m = table.length;
-        // ¶¨Î»
+        // å®šä½
         while (this.table[j] != null && !isEntryDeleted(j) && this.bitSet.get(offset) && i < m) {
             j = hash(keyHash, i++);
             offset = calcOffset(j);
@@ -102,7 +102,7 @@ public class OpItemHashMap {
                 this.mappedByteBuffer.put(buffer, 0, buffer.length);
                 bitSet.set(offset, true);
             }
-            // ´ÓÄÚ´æÊÍ·Å
+            // ä»å†…å­˜é‡Šæ”¾
             table[j].unload();
             return true;
         }
@@ -122,7 +122,7 @@ public class OpItemHashMap {
         if (!this.table[j].isLoaded()) {
             this.table[j].load(mappedByteBuffer, calcOffset(j), false);
         }
-        this.table[j].unload(); // ¼ÇµÃÊÍ·Å
+        this.table[j].unload(); // è®°å¾—é‡Šæ”¾
         return this.table[j].isDeleted();
     }
 
@@ -145,7 +145,7 @@ public class OpItemHashMap {
                 }
             }
             else {
-                table[j].unload();// ¼Ç×¡Çå³ı
+                table[j].unload();// è®°ä½æ¸…é™¤
             }
             j = hash(keyHash, i++);
         }
@@ -171,13 +171,13 @@ public class OpItemHashMap {
                 else {
                     table[j].setDeleted(true);
                     this.bitSet.set(offset, false);
-                    // Ğ´Èë´ÅÅÌ
+                    // å†™å…¥ç£ç›˜
                     this.mappedByteBuffer.put(offset, DELETED);
                     return table[j].getOpItem();
                 }
             }
             else {
-                table[j].unload();// ÇĞ¼Çunload
+                table[j].unload();// åˆ‡è®°unload
             }
             j = hash(keyHash, i++);
         }
@@ -252,7 +252,7 @@ public class OpItemHashMap {
             }
             table[currentIndex - 1].setDeleted(true);
             bitSet.set(calcOffset(currentIndex - 1), false);
-            // Ğ´Èë´ÅÅÌ
+            // å†™å…¥ç£ç›˜
             mappedByteBuffer.put(calcOffset(currentIndex - 1), DELETED);
             lastRet = -1;
         }

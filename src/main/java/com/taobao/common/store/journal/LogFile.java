@@ -24,14 +24,14 @@ import java.io.IOException;
 
 
 /**
- * Ò»¸öÈÕÖ¾ÎÄ¼ş
- * 
+ * ä¸€ä¸ªæ—¥å¿—æ–‡ä»¶
+ *
  * @author dogun (yuexuqiang at gmail.com)
  */
 class LogFile extends DataFile {
     /**
-     * Ä¬ÈÏ¹¹Ôìº¯Êı
-     * 
+     * é»˜è®¤æ„é€ å‡½æ•°
+     *
      * @param file
      * @throws IOException
      */
@@ -41,15 +41,15 @@ class LogFile extends DataFile {
 
 
     /**
-     * ¹¹Ôìº¯Êı
-     * 
+     * æ„é€ å‡½æ•°
+     *
      * @param file
      * @param force
      * @throws IOException
      */
     LogFile(File file, int n,boolean force) throws IOException {
         super(file, n,force);
-        // Õâ¸öµØ·½ÊÇÎªÁË·ÀÖ¹²Ù×÷ÈÕÖ¾ÎÄ¼şµÄ²»ÍêÕû¡£Èç¹û²»ÍêÕû£¬Ôò¶ªÆú×îºó²»ÍêÕûµÄÊı¾İ¡£
+        // è¿™ä¸ªåœ°æ–¹æ˜¯ä¸ºäº†é˜²æ­¢æ“ä½œæ—¥å¿—æ–‡ä»¶çš„ä¸å®Œæ•´ã€‚å¦‚æœä¸å®Œæ•´ï¼Œåˆ™ä¸¢å¼ƒæœ€åä¸å®Œæ•´çš„æ•°æ®ã€‚
         long count = fc.size() / OpItem.LENGTH;
         if (count * OpItem.LENGTH < fc.size()) {
             fc.truncate(count * OpItem.LENGTH);

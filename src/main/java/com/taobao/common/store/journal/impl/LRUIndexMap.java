@@ -14,12 +14,12 @@ import com.taobao.common.store.util.LRUHashMap;
 
 
 /**
- * 
- * »ùÓÚLRUµÄIndexMap£¬¿É½«LRUÌæ»»³öÀ´µÄOpItem´æ´¢ÓÚ´ÅÅÌ»º´æ
- * 
+ *
+ * åŸºäºLRUçš„IndexMapï¼Œå¯å°†LRUæ›¿æ¢å‡ºæ¥çš„OpItemå­˜å‚¨äºç£ç›˜ç¼“å­˜
+ *
  * @author boyan
- * 
- * @since 1.0, 2009-10-20 ÉÏÎç11:04:37
+ *
+ * @since 1.0, 2009-10-20 ä¸Šåˆ11:04:37
  */
 
 public class LRUIndexMap implements IndexMap {
@@ -65,7 +65,7 @@ public class LRUIndexMap implements IndexMap {
             return map.containsKey(key) || (enableLRU && this.handler.getDiskMap().get(key) != null);
         }
         catch (IOException e) {
-            throw new IllegalStateException("²éÑ¯KeyÊ§°Ü", e);
+            throw new IllegalStateException("æŸ¥è¯¢Keyå¤±è´¥", e);
         }
         finally {
             this.lock.unlock();
@@ -83,7 +83,7 @@ public class LRUIndexMap implements IndexMap {
             return result;
         }
         catch (IOException e) {
-            throw new IllegalStateException("·ÃÎÊ´ÅÅÌ»º´æÊ§°Ü", e);
+            throw new IllegalStateException("è®¿é—®ç£ç›˜ç¼“å­˜å¤±è´¥", e);
         }
         finally {
             this.lock.unlock();
@@ -165,7 +165,7 @@ public class LRUIndexMap implements IndexMap {
         lock.lock();
         try {
             return new LRUIndexMapItreator(new HashSet<BytesKey>(map.keySet()).iterator(), handler.getDiskMap()
-                .iterator());
+                    .iterator());
         }
         finally {
             lock.unlock();
@@ -204,7 +204,7 @@ public class LRUIndexMap implements IndexMap {
                     handler.getDiskMap().remove(key);
                 }
                 catch (IOException e) {
-                    throw new IllegalStateException("·ÃÎÊ´ÅÅÌ»º´æÊ§°Ü", e);
+                    throw new IllegalStateException("è®¿é—®ç£ç›˜ç¼“å­˜å¤±è´¥", e);
                 }
             }
         }

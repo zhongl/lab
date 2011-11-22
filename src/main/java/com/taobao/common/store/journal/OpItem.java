@@ -19,15 +19,16 @@
  */
 package com.taobao.common.store.journal;
 
+import com.google.common.base.Objects;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 
 /**
- * Ò»¸öÈÕÖ¾¼ÇÂ¼ ²Ù×÷+Êı¾İkey+Êı¾İÎÄ¼ş±àºÅ+Æ«ÒÆÁ¿+³¤¶È
- * 
+ * ä¸€ä¸ªæ—¥å¿—è®°å½• æ“ä½œ+æ•°æ®key+æ•°æ®æ–‡ä»¶ç¼–å·+åç§»é‡+é•¿åº¦
+ *
  * @author dogun (yuexuqiang at gmail.com)
- * 
  */
 public class OpItem {
     public static final byte OP_ADD = 1;
@@ -38,66 +39,43 @@ public class OpItem {
 
     byte op;
     byte[] key;
-    int number;
+    int fileSerialNumber;
     volatile long offset;
     int length;
 
+    public OpItem() {
+    }
+
+    public OpItem(byte op, byte[] key, int fileSerialNumber, long offset, int length) {
+        this.op = op;
+        this.key = key;
+        this.fileSerialNumber = fileSerialNumber;
+        this.offset = offset;
+        this.length = length;
+    }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + Arrays.hashCode(this.key);
-        result = prime * result + this.length;
-        result = prime * result + this.number;
-        result = prime * result + (int) (this.offset ^ this.offset >>> 32);
-        result = prime * result + this.op;
-        return result;
+        return Objects.hashCode(op, key, fileSerialNumber, offset, length);
     }
 
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (this.getClass() != obj.getClass()) {
-            return false;
-        }
-        OpItem other = (OpItem) obj;
-        if (!Arrays.equals(this.key, other.key)) {
-            return false;
-        }
-        if (this.length != other.length) {
-            return false;
-        }
-        if (this.number != other.number) {
-            return false;
-        }
-        if (this.offset != other.offset) {
-            return false;
-        }
-        if (this.op != other.op) {
-            return false;
-        }
-        return true;
+        return Objects.equal(this, obj);
     }
 
-
     /**
-     * ½«Ò»¸ö²Ù×÷×ª»»³É×Ö½ÚÊı×é
-     * 
-     * @return ×Ö½ÚÊı×é
+     * å°†ä¸€ä¸ªæ“ä½œè½¬æ¢æˆå­—èŠ‚æ•°ç»„
+     *
+     * @return å­—èŠ‚æ•°ç»„
      */
     public byte[] toByte() {
         byte[] data = new byte[LENGTH];
         ByteBuffer bf = ByteBuffer.wrap(data);
         bf.put(this.key);
         bf.put(this.op);
-        bf.putInt(this.number);
+        bf.putInt(this.fileSerialNumber);
         bf.putLong(this.offset);
         bf.putInt(this.length);
         bf.flip();
@@ -125,13 +103,13 @@ public class OpItem {
     }
 
 
-    public int getNumber() {
-        return this.number;
+    public int getFileSerialNumber() {
+        return this.fileSerialNumber;
     }
 
 
-    public void setNumber(int number) {
-        this.number = number;
+    public void setFileSerialNumber(int fileSerialNumber) {
+        this.fileSerialNumber = fileSerialNumber;
     }
 
 
@@ -156,8 +134,8 @@ public class OpItem {
 
 
     /**
-     * Í¨¹ı×Ö½ÚÊı×é¹¹Ôì³ÉÒ»¸ö²Ù×÷ÈÕÖ¾
-     * 
+     * é€šè¿‡å­—èŠ‚æ•°ç»„æ„é€ æˆä¸€ä¸ªæ“ä½œæ—¥å¿—
+     *
      * @param data
      */
     public void parse(byte[] data) {
@@ -170,7 +148,7 @@ public class OpItem {
         this.key = new byte[16];
         bf.get(this.key);
         this.op = bf.get();
-        this.number = bf.getInt();
+        this.fileSerialNumber = bf.getInt();
         this.offset = bf.getLong();
         this.length = bf.getInt();
     }
@@ -180,7 +158,7 @@ public class OpItem {
         this.key = new byte[16];
         bf.get(this.key);
         this.op = bf.get();
-        this.number = bf.getInt();
+        this.fileSerialNumber = bf.getInt();
         this.offset = bf.getLong();
         this.length = bf.getInt();
     }
@@ -188,7 +166,7 @@ public class OpItem {
 
     @Override
     public String toString() {
-        return "OpItem number:" + this.number + ", op:" + (int) this.op + ", offset:" + this.offset + ", length:"
+        return "OpItem fileSerialNumber:" + this.fileSerialNumber + ", op:" + (int) this.op + ", offset:" + this.offset + ", length:"
                 + this.length;
     }
 }

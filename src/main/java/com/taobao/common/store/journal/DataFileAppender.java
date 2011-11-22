@@ -37,7 +37,7 @@ public class DataFileAppender {
 
     public OpItem remove(OpItem opItem, BytesKey bytesKey, boolean sync) throws IOException {
         if (this.shutdown) {
-            throw new RuntimeException("DataFileAppenderÒÑ¾­¹Ø±Õ");
+            throw new RuntimeException("DataFileAppenderå·²ç»å…³é—­");
         }
         // sync = true;
         WriteCommand writeCommand = new WriteCommand(bytesKey, opItem, null, sync);
@@ -47,7 +47,7 @@ public class DataFileAppender {
 
     public OpItem store(OpItem opItem, BytesKey bytesKey, byte[] data, boolean sync) throws IOException {
         if (this.shutdown) {
-            throw new RuntimeException("DataFileAppenderÒÑ¾­¹Ø±Õ");
+            throw new RuntimeException("DataFileAppenderå·²ç»å…³é—­");
         }
         opItem.key = bytesKey.getData();
         opItem.length = data.length;
@@ -149,12 +149,12 @@ public class DataFileAppender {
             this.enqueueLock.lock();
             try {
                 if (df.getLength() >= JournalStore.FILE_SIZE && df.isUnUsed()) {
-                    if (this.journal.dataFile == df) { // ÅĞ¶ÏÈç¹ûÊÇµ±Ç°ÎÄ¼ş£¬Éú³ÉĞÂµÄ
+                    if (this.journal.dataFile == df) { // åˆ¤æ–­å¦‚æœæ˜¯å½“å‰æ–‡ä»¶ï¼Œç”Ÿæˆæ–°çš„
                         this.journal.newDataFile();
                     }
                     this.journal.dataFiles.remove(Integer.valueOf(df.getNumber()));
                     this.journal.logFiles.remove(Integer.valueOf(df.getNumber()));
-                    // System.out.println("delete " + df.getNumber());
+                    // System.out.println("delete " + df.getFileSerialNumber());
                     // System.out.println(batch.cmdList.get(0).opItem);
                     df.delete();
                     lf.delete();
@@ -188,7 +188,7 @@ public class DataFileAppender {
 
 
     private void writeDataAndLog(WriteBatch batch, final DataFile dataFile, final LogFile logFile,
-            final List<WriteCommand> dataList) {
+                                 final List<WriteCommand> dataList) {
         ByteBuffer dataBuf = null;
         // Contains op add
         if (batch.dataSize > 0) {
@@ -216,7 +216,7 @@ public class DataFileAppender {
         }
         this.enqueueLock.lock();
         try {
-            // ·ÇÍ¬²½£¬´ÓinflyWrites»º´æÖĞÒÆ³ı
+            // éåŒæ­¥ï¼Œä»inflyWritesç¼“å­˜ä¸­ç§»é™¤
             for (WriteCommand cmd : dataList) {
                 if (!cmd.sync && cmd.opItem.op == OpItem.OP_ADD) {
                     InflyWriteData inflyWriteData = this.inflyWrites.get(cmd.bytesKey);
@@ -270,7 +270,7 @@ public class DataFileAppender {
         WriteBatch result = null;
         this.enqueueLock.lock();
         try {
-            // Èç¹ûÃ»ÓĞÆô¶¯£¬ÔòÏÈÆô¶¯appenderÏß³Ì
+            // å¦‚æœæ²¡æœ‰å¯åŠ¨ï¼Œåˆ™å…ˆå¯åŠ¨appenderçº¿ç¨‹
             this.startAppendThreadIfNessary();
             if (this.nextWriteBatch == null) {
                 result = this.newWriteBatch(writeCommand);
@@ -297,21 +297,21 @@ public class DataFileAppender {
             if (!sync) {
                 InflyWriteData inflyWriteData = this.inflyWrites.get(writeCommand.bytesKey);
                 switch (writeCommand.opItem.op) {
-                case OpItem.OP_ADD:
-                    if (inflyWriteData == null) {
-                        this.inflyWrites.put(writeCommand.bytesKey, new InflyWriteData(writeCommand.data));
-                    }
-                    else {
-                        // update and increase reference count;
-                        inflyWriteData.data = writeCommand.data;
-                        inflyWriteData.count++;
-                    }
-                    break;
-                case OpItem.OP_DEL:
-                    // ÎŞÌõ¼şÉ¾³ı
-                    if (inflyWriteData != null) {
-                        this.inflyWrites.remove(writeCommand.bytesKey);
-                    }
+                    case OpItem.OP_ADD:
+                        if (inflyWriteData == null) {
+                            this.inflyWrites.put(writeCommand.bytesKey, new InflyWriteData(writeCommand.data));
+                        }
+                        else {
+                            // update and increase reference count;
+                            inflyWriteData.data = writeCommand.data;
+                            inflyWriteData.count++;
+                        }
+                        break;
+                    case OpItem.OP_DEL:
+                        // æ— æ¡ä»¶åˆ é™¤
+                        if (inflyWriteData != null) {
+                            this.inflyWrites.remove(writeCommand.bytesKey);
+                        }
                 }
 
             }
@@ -326,30 +326,30 @@ public class DataFileAppender {
 
     private WriteBatch newWriteBatch(WriteCommand writeCommand) throws IOException {
         WriteBatch result = null;
-        // ÉèÖÃoffsetºÍnumber
+        // è®¾ç½®offsetå’Œnumber
         if (writeCommand.opItem.op == OpItem.OP_ADD) {
-            // Ô¤ÏÈÅĞ¶ÏÒ»´Î
+            // é¢„å…ˆåˆ¤æ–­ä¸€æ¬¡
             if (this.journal.indices.containsKey(writeCommand.bytesKey)) {
-                throw new IOException("·¢ÏÖÖØ¸´µÄkey");
+                throw new IOException("å‘ç°é‡å¤çš„key");
             }
             DataFile dataFile = this.getDataFile();
             writeCommand.opItem.offset = dataFile.position();
-            writeCommand.opItem.number = dataFile.getNumber();
-            // ÒÆ¶¯dataFileÖ¸Õë
+            writeCommand.opItem.fileSerialNumber = dataFile.getNumber();
+            // ç§»åŠ¨dataFileæŒ‡é’ˆ
             dataFile.forward(writeCommand.data.length);
             this.nextWriteBatch = new WriteBatch(writeCommand, dataFile, this.journal.logFile);
             result = this.nextWriteBatch;
         }
         else {
-            DataFile dataFile = this.journal.dataFiles.get(writeCommand.opItem.number);
-            LogFile logFile = this.journal.logFiles.get(writeCommand.opItem.number);
+            DataFile dataFile = this.journal.dataFiles.get(writeCommand.opItem.fileSerialNumber);
+            LogFile logFile = this.journal.logFiles.get(writeCommand.opItem.fileSerialNumber);
             if (dataFile != null && logFile != null) {
                 this.nextWriteBatch = new WriteBatch(writeCommand, dataFile, logFile);
                 result = this.nextWriteBatch;
             }
             else {
                 // System.out.println(this.journal.dataFiles);
-                throw new IOException("ÈÕÖ¾ÎÄ¼şÒÑ¾­±»É¾³ı£¬±àºÅÎª" + writeCommand.opItem.number);
+                throw new IOException("æ—¥å¿—æ–‡ä»¶å·²ç»è¢«åˆ é™¤ï¼Œç¼–å·ä¸º" + writeCommand.opItem.fileSerialNumber);
             }
         }
         return result;
@@ -375,7 +375,7 @@ public class DataFileAppender {
 
     private DataFile getDataFile() throws IOException {
         DataFile dataFile = this.journal.dataFile;
-        if (dataFile.getLength() >= JournalStore.FILE_SIZE) { // ÂúÁË
+        if (dataFile.getLength() >= JournalStore.FILE_SIZE) { // æ»¡äº†
             dataFile = this.journal.newDataFile();
         }
         return dataFile;
@@ -404,43 +404,43 @@ public class DataFileAppender {
     }
 
     /**
-     * Ò»´ÎÅúÁ¿Ğ´Èë¼ÇÂ¼
-     * 
+     * ä¸€æ¬¡æ‰¹é‡å†™å…¥è®°å½•
+     *
      * @author dennis
-     * 
+     *
      */
     private class WriteBatch {
         final CountDownLatch latch = new CountDownLatch(1);
         final List<WriteCommand> cmdList = new ArrayList<WriteCommand>();
-        // É¾³ı²Ù×÷µÄ¸öÊı
+        // åˆ é™¤æ“ä½œçš„ä¸ªæ•°
         int removeOPCount;
         final DataFile dataFile;
         final LogFile logFile;
-        // Ğ´ÈëµÄdata´óĞ¡
+        // å†™å…¥çš„dataå¤§å°
         int dataSize;
-        // DataFileĞ´ÈëµÄÆğµã
+        // DataFileå†™å…¥çš„èµ·ç‚¹
         long offset = -1;
         volatile IOException exception;
-        // Ğ´ÈëÎÄ¼şµÄ±àºÅ
+        // å†™å…¥æ–‡ä»¶çš„ç¼–å·
         final int number;
 
 
         public WriteBatch(WriteCommand writeCommand, DataFile dataFile, LogFile logFile) {
             super();
             this.dataFile = dataFile;
-            this.number = writeCommand.opItem.number;
+            this.number = writeCommand.opItem.fileSerialNumber;
             this.logFile = logFile;
             switch (writeCommand.opItem.op) {
-            case OpItem.OP_DEL:
-                this.removeOPCount++;
-                break;
-            case OpItem.OP_ADD:
-                this.offset = writeCommand.opItem.offset;
-                this.dataSize += writeCommand.data.length;
-                this.dataFile.increment();
-                break;
-            default:
-                throw new RuntimeException("Unknow op type " + writeCommand.opItem);
+                case OpItem.OP_DEL:
+                    this.removeOPCount++;
+                    break;
+                case OpItem.OP_ADD:
+                    this.offset = writeCommand.opItem.offset;
+                    this.dataSize += writeCommand.data.length;
+                    this.dataFile.increment();
+                    break;
+                default:
+                    throw new RuntimeException("Unknow op type " + writeCommand.opItem);
             }
             this.cmdList.add(writeCommand);
 
@@ -449,24 +449,24 @@ public class DataFileAppender {
 
         public boolean canAppend(WriteCommand command) throws IOException {
             switch (command.opItem.op) {
-            case OpItem.OP_DEL:
-                // É¾³ı²»ÔÚ±¾´ÎbatchµÄÎÄ¼şÉÏ£¬²»¿ÉºÏ²¢
-                if (command.opItem.number != this.number) {
-                    return false;
-                }
-                break;
-            case OpItem.OP_ADD:
-                // ÎÄ¼ş²»ÄÜÌ«´ó
-                if (this.dataFile.getLength() + command.data.length >= JournalStore.FILE_SIZE) {
-                    return false;
-                }
-                // Ò»´Îbatch²»ÄÜÌ«´ó
-                if (this.dataSize + command.data.length >= DataFileAppender.this.maxWriteBatchSize) {
-                    return false;
-                }
-                break;
-            default:
-                throw new RuntimeException("Unknow op type " + command.opItem);
+                case OpItem.OP_DEL:
+                    // åˆ é™¤ä¸åœ¨æœ¬æ¬¡batchçš„æ–‡ä»¶ä¸Šï¼Œä¸å¯åˆå¹¶
+                    if (command.opItem.fileSerialNumber != this.number) {
+                        return false;
+                    }
+                    break;
+                case OpItem.OP_ADD:
+                    // æ–‡ä»¶ä¸èƒ½å¤ªå¤§
+                    if (this.dataFile.getLength() + command.data.length >= JournalStore.FILE_SIZE) {
+                        return false;
+                    }
+                    // ä¸€æ¬¡batchä¸èƒ½å¤ªå¤§
+                    if (this.dataSize + command.data.length >= DataFileAppender.this.maxWriteBatchSize) {
+                        return false;
+                    }
+                    break;
+                default:
+                    throw new RuntimeException("Unknow op type " + command.opItem);
             }
 
             return true;
@@ -475,29 +475,29 @@ public class DataFileAppender {
 
         public void append(WriteCommand writeCommand) throws IOException {
             switch (writeCommand.opItem.op) {
-            case OpItem.OP_ADD:
-                // Ìí¼Ó²Ù×÷ĞèÒªÉè¶¨offset
-                // 1¡¢µÚÒ»¸öopÊÇremoveµÄÇé¿ö
-                if (this.offset == -1) {
-                    this.offset = this.dataFile.position();
-                    writeCommand.opItem.offset = this.dataFile.position();
-                    writeCommand.opItem.number = this.dataFile.getNumber();
-                    this.dataFile.forward(writeCommand.data.length);
-                    this.dataSize += writeCommand.data.length;
-                }
-                else {
-                    writeCommand.opItem.offset = this.offset + this.dataSize;
-                    writeCommand.opItem.number = this.dataFile.getNumber();
-                    this.dataFile.forward(writeCommand.data.length);
-                    this.dataSize += writeCommand.data.length;
-                }
-                this.dataFile.increment();
-                break;
-            case OpItem.OP_DEL:
-                this.removeOPCount++;
-                break;
-            default:
-                throw new RuntimeException("Unknow op type " + writeCommand.opItem);
+                case OpItem.OP_ADD:
+                    // æ·»åŠ æ“ä½œéœ€è¦è®¾å®šoffset
+                    // 1ã€ç¬¬ä¸€ä¸ªopæ˜¯removeçš„æƒ…å†µ
+                    if (this.offset == -1) {
+                        this.offset = this.dataFile.position();
+                        writeCommand.opItem.offset = this.dataFile.position();
+                        writeCommand.opItem.fileSerialNumber = this.dataFile.getNumber();
+                        this.dataFile.forward(writeCommand.data.length);
+                        this.dataSize += writeCommand.data.length;
+                    }
+                    else {
+                        writeCommand.opItem.offset = this.offset + this.dataSize;
+                        writeCommand.opItem.fileSerialNumber = this.dataFile.getNumber();
+                        this.dataFile.forward(writeCommand.data.length);
+                        this.dataSize += writeCommand.data.length;
+                    }
+                    this.dataFile.increment();
+                    break;
+                case OpItem.OP_DEL:
+                    this.removeOPCount++;
+                    break;
+                default:
+                    throw new RuntimeException("Unknow op type " + writeCommand.opItem);
             }
             this.cmdList.add(writeCommand);
         }

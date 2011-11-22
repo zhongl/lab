@@ -9,77 +9,77 @@ import java.io.ObjectOutputStream;
 import org.apache.log4j.Logger;
 
 /**
- * Œ™¡À≤ªœÎ“¿¿µ∆‰À˚µƒ∞¸,’‚¿Ô÷ÿ–¥œ¬
+ * ‰∏∫‰∫Ü‰∏çÊÉ≥‰æùËµñÂÖ∂‰ªñÁöÑÂåÖ,ËøôÈáåÈáçÂÜô‰∏ã
  * @author shuihan
  *
  */
 public class SerializerUtil {
-        private static final Logger logger = Logger.getLogger(SerializerUtil.class);
+    private static final Logger logger = Logger.getLogger(SerializerUtil.class);
 
-        /**
-         * java∑¥–Ú¡–ªØ
-         * @param objContent
-         * @return
-         * @throws IOException
-         */
-        public static Object decodeObject(byte[] objContent) throws IOException{
-            Object obj = null;
-            ByteArrayInputStream bais = null;
-            ObjectInputStream ois = null;
-            try {
-                bais = new ByteArrayInputStream(objContent);
-                ois = new ObjectInputStream(bais);
-                obj = ois.readObject();
-            } catch (IOException ex) {
-                throw ex;
-            } catch (ClassNotFoundException ex) {
-                logger.warn("Failed to decode object.", ex);
-            } finally {
-                if (ois != null) {
-                    try {
-                        ois.close();
-                        bais.close();
-                    } catch (IOException ex) {
-                        logger.error("Failed to close stream.", ex);
-                    }
+    /**
+     * javaÂèçÂ∫èÂàóÂåñ
+     * @param objContent
+     * @return
+     * @throws IOException
+     */
+    public static Object decodeObject(byte[] objContent) throws IOException{
+        Object obj = null;
+        ByteArrayInputStream bais = null;
+        ObjectInputStream ois = null;
+        try {
+            bais = new ByteArrayInputStream(objContent);
+            ois = new ObjectInputStream(bais);
+            obj = ois.readObject();
+        } catch (IOException ex) {
+            throw ex;
+        } catch (ClassNotFoundException ex) {
+            logger.warn("Failed to decode object.", ex);
+        } finally {
+            if (ois != null) {
+                try {
+                    ois.close();
+                    bais.close();
+                } catch (IOException ex) {
+                    logger.error("Failed to close stream.", ex);
                 }
             }
-            return obj;
         }
+        return obj;
+    }
 
 
-        /**
-         * java–Ú¡–ªØ
-         * @param objContent
-         * @return
-         * @throws IOException
-         */
-        public static byte[] encodeObject(Object objContent) throws IOException {
-            ByteArrayOutputStream baos = null;
-            ObjectOutputStream output = null;
-            try {
-                baos = new ByteArrayOutputStream(1024);
-                output = new ObjectOutputStream(baos);
-                output.writeObject(objContent);
-            }
-            catch (IOException ex) {
-                throw ex;
+    /**
+     * javaÂ∫èÂàóÂåñ
+     * @param objContent
+     * @return
+     * @throws IOException
+     */
+    public static byte[] encodeObject(Object objContent) throws IOException {
+        ByteArrayOutputStream baos = null;
+        ObjectOutputStream output = null;
+        try {
+            baos = new ByteArrayOutputStream(1024);
+            output = new ObjectOutputStream(baos);
+            output.writeObject(objContent);
+        }
+        catch (IOException ex) {
+            throw ex;
 
-            }
-            finally {
-                if (output != null) {
-                    try {
-                        output.close();
-                        if (baos != null) {
-                            baos.close();
-                        }
-                    }
-                    catch (IOException ex) {
-                       logger.error("Failed to close stream.", ex);
+        }
+        finally {
+            if (output != null) {
+                try {
+                    output.close();
+                    if (baos != null) {
+                        baos.close();
                     }
                 }
+                catch (IOException ex) {
+                    logger.error("Failed to close stream.", ex);
+                }
             }
-            return baos != null ? baos.toByteArray() : null;
         }
+        return baos != null ? baos.toByteArray() : null;
+    }
 
 }

@@ -11,12 +11,12 @@ import com.taobao.common.store.util.LRUHashMap.EldestEntryHandler;
 
 
 /**
- * 
- * 
- * 
+ *
+ *
+ *
  * @author boyan
- * 
- * @since 1.0, 2009-10-20 ÉÏÎç11:17:23
+ *
+ * @since 1.0, 2009-10-20 ä¸Šåˆ11:17:23
  */
 
 public class NotifyEldestEntryHandler implements EldestEntryHandler<BytesKey, OpItem> {
@@ -47,12 +47,12 @@ public class NotifyEldestEntryHandler implements EldestEntryHandler<BytesKey, Op
 
     public boolean process(Entry<BytesKey, OpItem> eldest) {
         try {
-            // ³¢ÊÔ´æÈë´ÅÅÌ
+            // å°è¯•å­˜å…¥ç£ç›˜
             return this.diskMap.put(eldest.getKey(), eldest.getValue());
         }
         catch (IOException e) {
             e.printStackTrace();
-            log.error("Ğ´Èë´ÅÅÌ»º´æÊ§°Ü", e);
+            log.error("å†™å…¥ç£ç›˜ç¼“å­˜å¤±è´¥", e);
         }
         return false;
     }

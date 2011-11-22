@@ -23,12 +23,12 @@ import com.taobao.common.store.util.UniqId;
 
 
 /**
- * 
- * 
- * 
+ *
+ *
+ *
  * @author boyan
- * 
- * @since 1.0, 2009-10-22 œ¬ŒÁ12:46:40
+ *
+ * @since 1.0, 2009-10-22 ‰∏ãÂçà12:46:40
  */
 
 public class LRUIndexMapUnitTest {
@@ -71,7 +71,7 @@ public class LRUIndexMapUnitTest {
             OpItem opItem = new OpItem();
             opItem.setKey(key.getData());
             opItem.setLength(2);
-            opItem.setNumber(10);
+            opItem.setFileSerialNumber(10);
             opItem.setOffset(10000);
             opItem.setOp((byte) 0);
             Assert.assertNull(this.map.get(key));
@@ -93,7 +93,7 @@ public class LRUIndexMapUnitTest {
             OpItem opItem = new OpItem();
             opItem.setKey(key.getData());
             opItem.setLength(2);
-            opItem.setNumber(10);
+            opItem.setFileSerialNumber(10);
             opItem.setOffset(10000);
             opItem.setOp((byte) 0);
             this.map.put(key, opItem);
@@ -101,12 +101,12 @@ public class LRUIndexMapUnitTest {
         Assert.assertEquals(10, map.size());
         Assert.assertEquals(10, map.getMap().size());
 
-        // ÃÊªª
+        // ÊõøÊç¢
         BytesKey key = new BytesKey(UniqId.getInstance().getUniqIDHash());
         OpItem opItem = new OpItem();
         opItem.setKey(key.getData());
         opItem.setLength(2);
-        opItem.setNumber(10);
+        opItem.setFileSerialNumber(10);
         opItem.setOffset(10000);
         opItem.setOp((byte) 0);
         this.map.put(key, opItem);
@@ -120,7 +120,7 @@ public class LRUIndexMapUnitTest {
             opItem = new OpItem();
             opItem.setKey(key.getData());
             opItem.setLength(2);
-            opItem.setNumber(10);
+            opItem.setFileSerialNumber(10);
             opItem.setOffset(10000);
             opItem.setOp((byte) 0);
             this.map.put(key, opItem);
@@ -138,13 +138,13 @@ public class LRUIndexMapUnitTest {
         map = new LRUIndexMap(5000, getPath() + File.separator + getCacheFileName(), true);
 
         Map<BytesKey, OpItem> tmpMap = new HashMap<BytesKey, OpItem>();
-        // ≤Â»Î1ÕÚ ˝æ›£¨±È¿˙
+        // ÊèíÂÖ•1‰∏áÊï∞ÊçÆÔºåÈÅçÂéÜ
         for (int i = 0; i < 1000; i++) {
             BytesKey key = new BytesKey(UniqId.getInstance().getUniqIDHash());
             OpItem opItem = new OpItem();
             opItem.setKey(key.getData());
             opItem.setLength(i);
-            opItem.setNumber(i);
+            opItem.setFileSerialNumber(i);
             opItem.setOffset(i);
             opItem.setOp((byte) 0);
             tmpMap.put(key, opItem);
@@ -158,13 +158,13 @@ public class LRUIndexMapUnitTest {
     @Test
     public void testIterator() throws IOException {
         map = new LRUIndexMap(5000, getPath() + File.separator + getCacheFileName(), true);
-        // ≤Â»Î1ÕÚ ˝æ›£¨±È¿˙
+        // ÊèíÂÖ•1‰∏áÊï∞ÊçÆÔºåÈÅçÂéÜ
         for (int i = 0; i < 10000; i++) {
             BytesKey key = new BytesKey(UniqId.getInstance().getUniqIDHash());
             OpItem opItem = new OpItem();
             opItem.setKey(key.getData());
             opItem.setLength(i);
-            opItem.setNumber(i);
+            opItem.setFileSerialNumber(i);
             opItem.setOffset(i);
             opItem.setOp((byte) 0);
             this.map.put(key, opItem);
@@ -181,7 +181,7 @@ public class LRUIndexMapUnitTest {
         while (it.hasNext()) {
             BytesKey key = it.next();
             OpItem item = map.get(key);
-            Assert.assertEquals(item.getLength(), item.getNumber());
+            Assert.assertEquals(item.getLength(), item.getFileSerialNumber());
             it.remove();
             count++;
         }
@@ -212,7 +212,7 @@ public class LRUIndexMapUnitTest {
                     OpItem opItem = new OpItem();
                     opItem.setKey(key.getData());
                     opItem.setLength(2);
-                    opItem.setNumber(10);
+                    opItem.setFileSerialNumber(10);
                     opItem.setOffset(10000);
                     opItem.setOp((byte) 0);
                     map.put(key, opItem);
@@ -250,7 +250,7 @@ public class LRUIndexMapUnitTest {
         long start = System.currentTimeMillis();
         barrier.await();
         barrier.await();
-        System.out.println(threads + "∏ˆœﬂ≥Ã£¨≤¢∑¢≤Ÿ◊˜" + counter.get() + "∏ˆ‘™Àÿ£¨∫ƒ ±£∫" + (System.currentTimeMillis() - start));
+        System.out.println(threads + "‰∏™Á∫øÁ®ãÔºåÂπ∂ÂèëÊìç‰Ωú" + counter.get() + "‰∏™ÂÖÉÁ¥†ÔºåËÄóÊó∂Ôºö" + (System.currentTimeMillis() - start));
         Assert.assertEquals(0, map.size());
     }
 

@@ -49,18 +49,18 @@ import com.taobao.common.store.util.Util;
 
 
 /**
- * <b>Ò»¸öÍ¨¹ıÈÕÖ¾ÎÄ¼şÊµÏÖµÄkey/value¶ÔµÄ´æ´¢</b>
+ * <b>ä¸€ä¸ªé€šè¿‡æ—¥å¿—æ–‡ä»¶å®ç°çš„key/valueå¯¹çš„å­˜å‚¨</b>
  *
- * key±ØĞëÊÇ16×Ö½Ú <br />
- * 1¡¢Êı¾İÎÄ¼şºÍÈÕÖ¾ÎÄ¼şÔÚÒ»Æğ£¬²»¼ÇÂ¼Ë÷ÒıÎÄ¼ş<br />
+ * keyå¿…é¡»æ˜¯16å­—èŠ‚ <br />
+ * 1ã€æ•°æ®æ–‡ä»¶å’Œæ—¥å¿—æ–‡ä»¶åœ¨ä¸€èµ·ï¼Œä¸è®°å½•ç´¢å¼•æ–‡ä»¶<br />
  * name.1 name.1.log<br />
- * 2¡¢dataÎªÕæÕıµÄÊı¾İ£¬Ë³Ğò´æ·Å£¬Ê¹ÓÃÒıÓÃ¼ÆÊı<br />
- * 3¡¢logÎª²Ù×÷+key+Æ«ÒÆÁ¿<br />
- * 4¡¢Ìí¼ÓÊı¾İÊ±£¬ÏÈÌí¼Óname.1£¬»ñµÃoffsetºÍlength£¬È»ºó¼ÇÂ¼ÈÕÖ¾£¬Ôö¼ÓÒıÓÃ¼ÆÊı£¬È»ºó¼ÓÈë»ò¸üĞÂÄÚ´æË÷Òı<br />
- * 5¡¢É¾³ıÊı¾İÊ±£¬¼ÇÂ¼ÈÕÖ¾£¬É¾³ıÄÚ´æË÷Òı£¬¼õÉÙÎÄ¼ş¼ÆÊı£¬ÅĞ¶Ï´óĞ¡ÊÇ·ñÂú×ã´óĞ¡ÁË£¬²¢ÇÒÎŞÒıÓÃÁË£¬¾ÍÉ¾³ıÊı¾İÎÄ¼şºÍÈÕÖ¾ÎÄ¼ş<br />
- * 6¡¢»ñÈ¡Êı¾İÊ±£¬Ö±½Ó´ÓÄÚ´æË÷Òı»ñµÃÊı¾İÆ«ÒÆÁ¿<br />
- * 7¡¢¸üĞÂÊı¾İÊ±£¬µ÷ÓÃÌí¼Ó<br />
- * 8¡¢Æô¶¯Ê±£¬±éÀúÃ¿Ò»¸ölogÎÄ¼ş£¬Í¨¹ıÈÕÖ¾µÄ²Ù×÷»Ö¸´ÄÚ´æË÷Òı<br />
+ * 2ã€dataä¸ºçœŸæ­£çš„æ•°æ®ï¼Œé¡ºåºå­˜æ”¾ï¼Œä½¿ç”¨å¼•ç”¨è®¡æ•°<br />
+ * 3ã€logä¸ºæ“ä½œ+key+åç§»é‡<br />
+ * 4ã€æ·»åŠ æ•°æ®æ—¶ï¼Œå…ˆæ·»åŠ name.1ï¼Œè·å¾—offsetå’Œlengthï¼Œç„¶åè®°å½•æ—¥å¿—ï¼Œå¢åŠ å¼•ç”¨è®¡æ•°ï¼Œç„¶ååŠ å…¥æˆ–æ›´æ–°å†…å­˜ç´¢å¼•<br />
+ * 5ã€åˆ é™¤æ•°æ®æ—¶ï¼Œè®°å½•æ—¥å¿—ï¼Œåˆ é™¤å†…å­˜ç´¢å¼•ï¼Œå‡å°‘æ–‡ä»¶è®¡æ•°ï¼Œåˆ¤æ–­å¤§å°æ˜¯å¦æ»¡è¶³å¤§å°äº†ï¼Œå¹¶ä¸”æ— å¼•ç”¨äº†ï¼Œå°±åˆ é™¤æ•°æ®æ–‡ä»¶å’Œæ—¥å¿—æ–‡ä»¶<br />
+ * 6ã€è·å–æ•°æ®æ—¶ï¼Œç›´æ¥ä»å†…å­˜ç´¢å¼•è·å¾—æ•°æ®åç§»é‡<br />
+ * 7ã€æ›´æ–°æ•°æ®æ—¶ï¼Œè°ƒç”¨æ·»åŠ <br />
+ * 8ã€å¯åŠ¨æ—¶ï¼Œéå†æ¯ä¸€ä¸ªlogæ–‡ä»¶ï¼Œé€šè¿‡æ—¥å¿—çš„æ“ä½œæ¢å¤å†…å­˜ç´¢å¼•<br />
  *
  * @author dogun (yuexuqiang at gmail.com)
  */
@@ -111,7 +111,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * Ä¬ÈÏ¹¹Ôìº¯Êı£¬»áÔÚpathÏÂÊ¹ÓÃname×÷ÎªÃû×ÖÉú³ÉÊı¾İÎÄ¼ş
+     * é»˜è®¤æ„é€ å‡½æ•°ï¼Œä¼šåœ¨pathä¸‹ä½¿ç”¨nameä½œä¸ºåå­—ç”Ÿæˆæ•°æ®æ–‡ä»¶
      *
      * @param path
      * @param name
@@ -124,7 +124,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * ×Ô¼ºÊµÏÖ Ë÷ÒıÎ¬»¤×é¼ş
+     * è‡ªå·±å®ç° ç´¢å¼•ç»´æŠ¤ç»„ä»¶
      *
      * @param path
      * @param name
@@ -155,7 +155,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * ÆôÓÃÊı¾İÎÄ¼şÕûÀíµÄ¹¹Ôìº¯Êı
+     * å¯ç”¨æ•°æ®æ–‡ä»¶æ•´ç†çš„æ„é€ å‡½æ•°
      *
      * @param path
      * @param name
@@ -163,7 +163,7 @@ public class JournalStore implements Store, JournalStoreMBean {
      * @throws IOException
      */
     public JournalStore(String path, String name, IndexMap indices, boolean force, boolean enableIndexLRU,
-            boolean enabledDataFileCheck) throws IOException {
+                        boolean enabledDataFileCheck) throws IOException {
         Util.registMBean(this, name);
         this.path = path;
         this.name = name;
@@ -171,11 +171,11 @@ public class JournalStore implements Store, JournalStoreMBean {
         if (indices == null) {
             if (enableIndexLRU) {
                 long maxMemory = Runtime.getRuntime().maxMemory();
-                // Ä¬ÈÏÊ¹ÓÃ×î´óÄÚ´æµÄ1/40À´´æ´¢Ë÷Òı£¬Ä¿Ç°Ö»ÊÇ¹À¼ÆÖµ£¬ĞèÒªµ÷Õû
+                // é»˜è®¤ä½¿ç”¨æœ€å¤§å†…å­˜çš„1/40æ¥å­˜å‚¨ç´¢å¼•ï¼Œç›®å‰åªæ˜¯ä¼°è®¡å€¼ï¼Œéœ€è¦è°ƒæ•´
                 int capacity = (int) (maxMemory / 40 / 60);
                 this.indices =
                         new LRUIndexMap(capacity, this.getPath() + File.separator + name + "_indexCache",
-                            enableIndexLRU);
+                                enableIndexLRU);
             }
             else {
                 this.indices = new ConcurrentIndexMap();
@@ -186,29 +186,29 @@ public class JournalStore implements Store, JournalStoreMBean {
         }
         this.dataFileAppender = new DataFileAppender(this);
 
-        // ÔÚinitLoad Ö®Ç°¼ÓÔØcheckpoint
+        // åœ¨initLoad ä¹‹å‰åŠ è½½checkpoint
         try {
             checkpoint = new Checkpoint(this.path, this.resumeRecode);
         }
         catch (Exception e1) {
-            log.error("³õÊ¼»¯checkPoint Ê§°Ü!", e1);
+            log.error("åˆå§‹åŒ–checkPoint å¤±è´¥!", e1);
         }
 
         this.initLoad();
-        // Èç¹ûµ±Ç°Ã»ÓĞ¿ÉÓÃÎÄ¼ş£¬Éú³É
+        // å¦‚æœå½“å‰æ²¡æœ‰å¯ç”¨æ–‡ä»¶ï¼Œç”Ÿæˆ
         if (null == this.dataFile || null == this.logFile) {
             this.newDataFile();
         }
 
-        // Æô¶¯Ò»¸ö¶¨Ê±Ïß³Ì£¬¶ÔStore4jµÄÊı¾İÎÄ¼ş¶¨ÆÚ½øĞĞÕûÀí.
+        // å¯åŠ¨ä¸€ä¸ªå®šæ—¶çº¿ç¨‹ï¼Œå¯¹Store4jçš„æ•°æ®æ–‡ä»¶å®šæœŸè¿›è¡Œæ•´ç†.
         if (enabledDataFileCheck) {
             this.scheduledPool = Executors.newSingleThreadScheduledExecutor();
             this.scheduledPool.scheduleAtFixedRate(new DataFileCheckThread(), this.calcDelay(), HALF_DAY,
-                TimeUnit.MILLISECONDS);
-            log.warn("Æô¶¯Êı¾İÎÄ¼ş¶¨Ê±ÕûÀíÏß³Ì");
+                    TimeUnit.MILLISECONDS);
+            log.warn("å¯åŠ¨æ•°æ®æ–‡ä»¶å®šæ—¶æ•´ç†çº¿ç¨‹");
         }
 
-        // µ±Ó¦ÓÃ±»¹Ø±ÕµÄÊ±ºò,Èç¹ûÃ»ÓĞ¹Ø±ÕÎÄ¼ş,¹Ø±ÕÖ®.¶ÔÄ³Ğ©²Ù×÷ÏµÍ³ÓĞÓÃ
+        // å½“åº”ç”¨è¢«å…³é—­çš„æ—¶å€™,å¦‚æœæ²¡æœ‰å…³é—­æ–‡ä»¶,å…³é—­ä¹‹.å¯¹æŸäº›æ“ä½œç³»ç»Ÿæœ‰ç”¨
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
@@ -224,7 +224,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * Ä¬ÈÏ¹¹Ôìº¯Êı£¬»áÔÚpathÏÂÊ¹ÓÃname×÷ÎªÃû×ÖÉú³ÉÊı¾İÎÄ¼ş
+     * é»˜è®¤æ„é€ å‡½æ•°ï¼Œä¼šåœ¨pathä¸‹ä½¿ç”¨nameä½œä¸ºåå­—ç”Ÿæˆæ•°æ®æ–‡ä»¶
      *
      * @param path
      * @param name
@@ -246,7 +246,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     public void add(byte[] key, byte[] data, boolean force) throws IOException {
-        // ÏÈ¼ì²éÊÇ·ñÒÑ¾­´æÔÚ£¬Èç¹ûÒÑ¾­´æÔÚÅ×³öÒì³£ ÅĞ¶ÏÎÄ¼şÊÇ·ñÂúÁË£¬Ìí¼Óname.1£¬»ñµÃoffset£¬¼ÇÂ¼ÈÕÖ¾£¬Ôö¼ÓÒıÓÃ¼ÆÊı£¬¼ÓÈë»ò¸üĞÂÄÚ´æË÷Òı
+        // å…ˆæ£€æŸ¥æ˜¯å¦å·²ç»å­˜åœ¨ï¼Œå¦‚æœå·²ç»å­˜åœ¨æŠ›å‡ºå¼‚å¸¸ åˆ¤æ–­æ–‡ä»¶æ˜¯å¦æ»¡äº†ï¼Œæ·»åŠ name.1ï¼Œè·å¾—offsetï¼Œè®°å½•æ—¥å¿—ï¼Œå¢åŠ å¼•ç”¨è®¡æ•°ï¼ŒåŠ å…¥æˆ–æ›´æ–°å†…å­˜ç´¢å¼•
         this.checkParam(key, data);
         this.innerAdd(key, data, -1, force);
     }
@@ -258,7 +258,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * ÓÃÓÚÕûÌåÊı¾İÎÄ¼ş£¬ÄÜ¹»½«Êı¾İÎÄ¼şÊİÉí.
+     * ç”¨äºæ•´ä½“æ•°æ®æ–‡ä»¶ï¼Œèƒ½å¤Ÿå°†æ•°æ®æ–‡ä»¶ç˜¦èº«.
      *
      * @param key
      * @throws IOException
@@ -273,7 +273,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * ¼ÆËãÏÂ¸öÖ´ĞĞÖÜÆÚµÄdelayÊ±¼ä.
+     * è®¡ç®—ä¸‹ä¸ªæ‰§è¡Œå‘¨æœŸçš„delayæ—¶é—´.
      *
      * @return
      */
@@ -287,13 +287,13 @@ public class JournalStore implements Store, JournalStoreMBean {
         date.set(Calendar.SECOND, 0);
 
         long delay = date.getTime().getTime() - currentTime;
-        // ³¬¹ıÔçÉÏ6µã£¬Çó¾àÀëÏÂÎç6µãÊ±¼ä
+        // è¶…è¿‡æ—©ä¸Š6ç‚¹ï¼Œæ±‚è·ç¦»ä¸‹åˆ6ç‚¹æ—¶é—´
         if (delay < 0) {
             date.set(Calendar.HOUR_OF_DAY, 18);
             date.set(Calendar.MINUTE, 0);
             date.set(Calendar.SECOND, 0);
             delay = date.getTime().getTime() - currentTime;
-            // ³¬¹ıÍíÉÏ6µã
+            // è¶…è¿‡æ™šä¸Š6ç‚¹
             if (delay < 0) {
                 delay += HALF_DAY;
             }
@@ -303,7 +303,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * ÄÚ²¿Ìí¼ÓÊı¾İ
+     * å†…éƒ¨æ·»åŠ æ•°æ®
      *
      * @param key
      * @param data
@@ -322,9 +322,9 @@ public class JournalStore implements Store, JournalStoreMBean {
             this.lastModifiedMap.put(k, oldLastTime);
         }
         /**
-         * ¼ÇÂ¼×î½üÒ»´ÎaddµÄ offset,»Ö¸´µÄÊ±ºòÖ±½Ó´Ó¸Ãoffset»Ö¸´
+         * è®°å½•æœ€è¿‘ä¸€æ¬¡addçš„ offset,æ¢å¤çš„æ—¶å€™ç›´æ¥ä»è¯¥offsetæ¢å¤
          */
-        this.resumeRecode.put(new BytesKey(key), new JournalLocation(op.number, op.offset));
+        this.resumeRecode.put(new BytesKey(key), new JournalLocation(op.fileSerialNumber, op.offset));
         return op;
     }
 
@@ -344,14 +344,14 @@ public class JournalStore implements Store, JournalStoreMBean {
         OpItem op = this.indices.get(bytesKey);
         if (null != op) {
 
-            DataFile df = this.dataFiles.get(Integer.valueOf(op.number));
+            DataFile df = this.dataFiles.get(Integer.valueOf(op.fileSerialNumber));
             if (null != df) {
                 ByteBuffer bf = ByteBuffer.wrap(new byte[op.length]);
                 df.read(bf, op.offset);
                 data = bf.array();
             }
             else {
-                log.warn("Êı¾İÎÄ¼ş¶ªÊ§£º" + op);
+                log.warn("æ•°æ®æ–‡ä»¶ä¸¢å¤±ï¼š" + op);
                 this.indices.remove(bytesKey);
                 this.lastModifiedMap.remove(bytesKey);
             }
@@ -384,7 +384,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
             public void remove() {
-                throw new UnsupportedOperationException("²»Ö§³ÖÉ¾³ı£¬ÇëÖ±½Óµ÷ÓÃstore.remove·½·¨");
+                throw new UnsupportedOperationException("ä¸æ”¯æŒåˆ é™¤ï¼Œè¯·ç›´æ¥è°ƒç”¨store.removeæ–¹æ³•");
             }
         };
     }
@@ -401,10 +401,10 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * »ñµÃ¼ÇÂ¼ÔÚÄÇ¸öÎÄ¼ş£¬¼ÇÂ¼ÈÕÖ¾£¬É¾³ıÄÚ´æË÷Òı£¬¼õÉÙÎÄ¼ş¼ÆÊı£¬ÅĞ¶Ï´óĞ¡ÊÇ·ñÂú×ã´óĞ¡ÁË£¬²¢ÇÒÎŞÒıÓÃÁË£¬¾ÍÉ¾³ıÊı¾İÎÄ¼şºÍÈÕÖ¾ÎÄ¼ş
+     * è·å¾—è®°å½•åœ¨é‚£ä¸ªæ–‡ä»¶ï¼Œè®°å½•æ—¥å¿—ï¼Œåˆ é™¤å†…å­˜ç´¢å¼•ï¼Œå‡å°‘æ–‡ä»¶è®¡æ•°ï¼Œåˆ¤æ–­å¤§å°æ˜¯å¦æ»¡è¶³å¤§å°äº†ï¼Œå¹¶ä¸”æ— å¼•ç”¨äº†ï¼Œå°±åˆ é™¤æ•°æ®æ–‡ä»¶å’Œæ—¥å¿—æ–‡ä»¶
      *
      * @param key
-     * @return ÊÇ·ñÉ¾³ıÁËÊı¾İ
+     * @return æ˜¯å¦åˆ é™¤äº†æ•°æ®
      * @throws IOException
      */
     private boolean innerRemove(byte[] key, boolean sync) throws IOException {
@@ -423,25 +423,25 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * ¸ù¾İOpItem¶ÔÏó£¬ÔÚÈÕÖ¾ÎÄ¼şÖĞ¼ÇÂ¼É¾³ıµÄ²Ù×÷ÈÕÖ¾£¬²¢ÇÒĞŞ¸Ä¶ÔÓ¦Êı¾İÎÄ¼şµÄÒıÓÃ¼ÆÊı.
+     * æ ¹æ®OpItemå¯¹è±¡ï¼Œåœ¨æ—¥å¿—æ–‡ä»¶ä¸­è®°å½•åˆ é™¤çš„æ“ä½œæ—¥å¿—ï¼Œå¹¶ä¸”ä¿®æ”¹å¯¹åº”æ•°æ®æ–‡ä»¶çš„å¼•ç”¨è®¡æ•°.
      *
      * @param op
      * @return
      * @throws IOException
      */
     private boolean innerRemove(OpItem op, BytesKey bytesKey, boolean sync) throws IOException {
-        DataFile df = this.dataFiles.get(Integer.valueOf(op.number));
-        LogFile lf = this.logFiles.get(Integer.valueOf(op.number));
+        DataFile df = this.dataFiles.get(Integer.valueOf(op.fileSerialNumber));
+        LogFile lf = this.logFiles.get(Integer.valueOf(op.fileSerialNumber));
         if (null != df && null != lf) {
             OpItem o = new OpItem();
             o.key = op.key;
             o.length = op.length;
-            o.number = op.number;
+            o.fileSerialNumber = op.fileSerialNumber;
             o.offset = op.offset;
             o.op = OpItem.OP_DEL;
             this.dataFileAppender.remove(o, bytesKey, sync);
             /**
-             * É¾³ı¶ÔÓ¦µÄcheckpoint¼ÇÂ¼
+             * åˆ é™¤å¯¹åº”çš„checkpointè®°å½•
              */
             this.resumeRecode.remove(bytesKey);
             return true;
@@ -451,7 +451,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * ¼ì²é²ÎÊıÊÇ·ñºÏ·¨
+     * æ£€æŸ¥å‚æ•°æ˜¯å¦åˆæ³•
      *
      * @param key
      * @param data
@@ -467,20 +467,20 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * Éú³ÉÒ»¸öĞÂµÄÊı¾İÎÄ¼ş
+     * ç”Ÿæˆä¸€ä¸ªæ–°çš„æ•°æ®æ–‡ä»¶
      *
      * @throws FileNotFoundException
      */
     protected DataFile newDataFile() throws IOException {
         if (this.dataFiles.size() > this.maxFileCount) {
-            throw new RuntimeException("×î¶àÖ»ÄÜ´æ´¢" + this.maxFileCount + "¸öÊı¾İÎÄ¼ş");
+            throw new RuntimeException("æœ€å¤šåªèƒ½å­˜å‚¨" + this.maxFileCount + "ä¸ªæ•°æ®æ–‡ä»¶");
         }
         int n = this.number.incrementAndGet();
         this.dataFile = new DataFile(new File(this.path + File.separator + this.name + "." + n), n, this.force);
         this.logFile = new LogFile(new File(this.path + File.separator + this.name + "." + n + ".log"), n, this.force);
         this.dataFiles.put(Integer.valueOf(n), this.dataFile);
         this.logFiles.put(Integer.valueOf(n), this.logFile);
-        log.info("Éú³ÉĞÂÎÄ¼ş£º" + this.dataFile);
+        log.info("ç”Ÿæˆæ–°æ–‡ä»¶ï¼š" + this.dataFile);
         return this.dataFile;
     }
 
@@ -496,12 +496,12 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * Àà³õÊ¼»¯µÄÊ±ºò£¬ĞèÒª±éÀúËùÓĞµÄÈÕÖ¾ÎÄ¼ş£¬»Ö¸´ÄÚ´æµÄË÷Òı
+     * ç±»åˆå§‹åŒ–çš„æ—¶å€™ï¼Œéœ€è¦éå†æ‰€æœ‰çš„æ—¥å¿—æ–‡ä»¶ï¼Œæ¢å¤å†…å­˜çš„ç´¢å¼•
      *
      * @throws IOException
      */
     private void initLoad() throws IOException {
-        log.warn("¿ªÊ¼»Ö¸´Êı¾İ");
+        log.warn("å¼€å§‹æ¢å¤æ•°æ®");
         final String nm = this.name + ".";
         File dir = new File(this.path);
         this.checkParentDir(dir);
@@ -513,7 +513,7 @@ public class JournalStore implements Store, JournalStoreMBean {
         if (fs == null || fs.length == 0) {
             return;
         }
-        log.warn("±éÀúÃ¿¸öÊı¾İÎÄ¼ş");
+        log.warn("éå†æ¯ä¸ªæ•°æ®æ–‡ä»¶");
         List<Integer> indexList = new LinkedList<Integer>();
         for (File f : fs) {
             try {
@@ -528,7 +528,7 @@ public class JournalStore implements Store, JournalStoreMBean {
 
         Integer[] indices = indexList.toArray(new Integer[indexList.size()]);
 
-        // ¶ÔÎÄ¼şË³Ğò½øĞĞÅÅĞò
+        // å¯¹æ–‡ä»¶é¡ºåºè¿›è¡Œæ’åº
         Arrays.sort(indices);
 
         JournalLocation location = this.checkpoint.getJournalLocation();
@@ -540,17 +540,17 @@ public class JournalStore implements Store, JournalStoreMBean {
         }
 
         for (Integer n : indices) {
-            log.warn("´¦ÀíindexÎª" + n + "µÄÎÄ¼ş");
-            // ±£´æ±¾Êı¾İÎÄ¼şµÄË÷ÒıĞÅÏ¢
+            log.warn("å¤„ç†indexä¸º" + n + "çš„æ–‡ä»¶");
+            // ä¿å­˜æœ¬æ•°æ®æ–‡ä»¶çš„ç´¢å¼•ä¿¡æ¯
             Map<BytesKey, OpItem> idx = new HashMap<BytesKey, OpItem>();
-            // Éú³ÉdataFileºÍlogFile
+            // ç”ŸæˆdataFileå’ŒlogFile
             File f = new File(dir, this.name + "." + n);
             DataFile df = new DataFile(f, n, this.force);
             LogFile lf = new LogFile(new File(f.getAbsolutePath() + ".log"), n, this.force);
             long size = lf.getLength() / OpItem.LENGTH;
             if (n >= location.getNumber()) {
 
-                for (long i = 0; i < size; ++i) { // Ñ­»·Ã¿Ò»¸ö²Ù×÷
+                for (long i = 0; i < size; ++i) { // å¾ªç¯æ¯ä¸€ä¸ªæ“ä½œ
                     ByteBuffer bf = ByteBuffer.wrap(new byte[OpItem.LENGTH]);
                     lf.read(bf, i * OpItem.LENGTH);
                     if (bf.hasRemaining()) {
@@ -561,73 +561,73 @@ public class JournalStore implements Store, JournalStoreMBean {
                     op.parse(bf.array());
                     BytesKey key = new BytesKey(op.key);
                     switch (op.op) {
-                    case OpItem.OP_ADD: // Èç¹ûÊÇÌí¼ÓµÄ²Ù×÷£¬¼ÓÈëË÷Òı£¬Ôö¼ÓÒıÓÃ¼ÆÊı
-                        OpItem o = this.indices.get(key);
-                        if (null != o) {
-                            // ÒÑ¾­ÔÚÖ®Ç°Ìí¼Ó¹ı£¬ÄÇÃ´±ØÈ»ÊÇUpdateµÄÊ±ºò£¬RemoveµÄ²Ù×÷ÈÕÖ¾Ã»ÓĞĞ´Èë¡£
+                        case OpItem.OP_ADD: // å¦‚æœæ˜¯æ·»åŠ çš„æ“ä½œï¼ŒåŠ å…¥ç´¢å¼•ï¼Œå¢åŠ å¼•ç”¨è®¡æ•°
+                            OpItem o = this.indices.get(key);
+                            if (null != o) {
+                                // å·²ç»åœ¨ä¹‹å‰æ·»åŠ è¿‡ï¼Œé‚£ä¹ˆå¿…ç„¶æ˜¯Updateçš„æ—¶å€™ï¼ŒRemoveçš„æ“ä½œæ—¥å¿—æ²¡æœ‰å†™å…¥ã€‚
 
-                            // Ğ´ÈëRemoveÈÕÖ¾
-                            this.innerRemove(o, key, true);
+                                // å†™å…¥Removeæ—¥å¿—
+                                this.innerRemove(o, key, true);
 
-                            // ´ÓmapÖĞÉ¾³ı
-                            this.indices.remove(key);
-                            this.lastModifiedMap.remove(key);
-                        }
-                        boolean addRefCount = true;
-                        if (idx.get(key) != null) {
-                            // ÔÚÍ¬Ò»¸öÎÄ¼şÖĞadd»òÕßupdate¹ı£¬ÄÇÃ´Ö»ÊÇ¸üĞÂÄÚÈİ£¬¶ø²»Ôö¼ÓÒıÓÃ¼ÆÊı¡£
-                            addRefCount = false;
-                        }
+                                // ä»mapä¸­åˆ é™¤
+                                this.indices.remove(key);
+                                this.lastModifiedMap.remove(key);
+                            }
+                            boolean addRefCount = true;
+                            if (idx.get(key) != null) {
+                                // åœ¨åŒä¸€ä¸ªæ–‡ä»¶ä¸­addæˆ–è€…updateè¿‡ï¼Œé‚£ä¹ˆåªæ˜¯æ›´æ–°å†…å®¹ï¼Œè€Œä¸å¢åŠ å¼•ç”¨è®¡æ•°ã€‚
+                                addRefCount = false;
+                            }
 
-                        idx.put(key, op);
+                            idx.put(key, op);
 
-                        if (addRefCount) {
-                            df.increment();
-                        }
-                        break;
+                            if (addRefCount) {
+                                df.increment();
+                            }
+                            break;
 
-                    case OpItem.OP_DEL: // Èç¹ûÊÇÉ¾³ıµÄ²Ù×÷£¬Ë÷ÒıÈ¥³ı£¬¼õÉÙÒıÓÃ¼ÆÊı
-                        idx.remove(key);
-                        df.decrement();
-                        break;
+                        case OpItem.OP_DEL: // å¦‚æœæ˜¯åˆ é™¤çš„æ“ä½œï¼Œç´¢å¼•å»é™¤ï¼Œå‡å°‘å¼•ç”¨è®¡æ•°
+                            idx.remove(key);
+                            df.decrement();
+                            break;
 
-                    default:
-                        log.warn("unknow op:" + (int) op.op);
-                        break;
+                        default:
+                            log.warn("unknow op:" + (int) op.op);
+                            break;
                     }
                 }
             }
             else {
-                log.warn("¸ù¾İcheckpoint Ìø¹ı Ë÷ÒıÎª " + n + " µÄÎÄ¼ş¼ÓÔØ¼ì²é£¡");
+                log.warn("æ ¹æ®checkpoint è·³è¿‡ ç´¢å¼•ä¸º " + n + " çš„æ–‡ä»¶åŠ è½½æ£€æŸ¥ï¼");
             }
 
-            if (df.getLength() >= FILE_SIZE && df.isUnUsed()) { // Èç¹ûÕâ¸öÊı¾İÎÄ¼şÒÑ¾­´ïµ½Ö¸¶¨´óĞ¡£¬²¢ÇÒ²»ÔÙÊ¹ÓÃ£¬É¾³ı
+            if (df.getLength() >= FILE_SIZE && df.isUnUsed()) { // å¦‚æœè¿™ä¸ªæ•°æ®æ–‡ä»¶å·²ç»è¾¾åˆ°æŒ‡å®šå¤§å°ï¼Œå¹¶ä¸”ä¸å†ä½¿ç”¨ï¼Œåˆ é™¤
                 df.delete();
                 lf.delete();
-                log.warn("²»ÓÃÁË£¬Ò²³¬¹ıÁË´óĞ¡£¬É¾³ı");
+                log.warn("ä¸ç”¨äº†ï¼Œä¹Ÿè¶…è¿‡äº†å¤§å°ï¼Œåˆ é™¤");
             }
-            else { // ·ñÔò¼ÓÈëmap
+            else { // å¦åˆ™åŠ å…¥map
                 this.dataFiles.put(n, df);
                 this.logFiles.put(n, lf);
-                if (!df.isUnUsed()) { // Èç¹ûÓĞË÷Òı£¬¼ÓÈë×ÜË÷Òı
+                if (!df.isUnUsed()) { // å¦‚æœæœ‰ç´¢å¼•ï¼ŒåŠ å…¥æ€»ç´¢å¼•
                     this.indices.putAll(idx);
-                    // ´ÓĞÂÆô¶¯ºó£¬ÓÃÈÕÖ¾ÎÄ¼şµÄ×îºóĞŞ¸ÄÊ±¼ä,ÕâÀïÃ»ÓĞ±ØÒª·Ç³£¾«È·.
+                    // ä»æ–°å¯åŠ¨åï¼Œç”¨æ—¥å¿—æ–‡ä»¶çš„æœ€åä¿®æ”¹æ—¶é—´,è¿™é‡Œæ²¡æœ‰å¿…è¦éå¸¸ç²¾ç¡®.
                     long lastModified = lf.lastModified();
                     for (BytesKey key : idx.keySet()) {
                         this.lastModifiedMap.put(key, lastModified);
                     }
-                    log.warn("»¹ÔÚÊ¹ÓÃ£¬·ÅÈëË÷Òı£¬referenceCount:" + df.getReferenceCount() + ", index:" + idx.size());
+                    log.warn("è¿˜åœ¨ä½¿ç”¨ï¼Œæ”¾å…¥ç´¢å¼•ï¼ŒreferenceCount:" + df.getReferenceCount() + ", index:" + idx.size());
                 }
             }
         }
-        // Ğ£Ñé¼ÓÔØµÄÎÄ¼ş£¬²¢ÉèÖÃµ±Ç°ÎÄ¼ş
+        // æ ¡éªŒåŠ è½½çš„æ–‡ä»¶ï¼Œå¹¶è®¾ç½®å½“å‰æ–‡ä»¶
         if (this.dataFiles.size() > 0) {
             indices = this.dataFiles.keySet().toArray(new Integer[this.dataFiles.keySet().size()]);
             Arrays.sort(indices);
             for (int i = 0; i < indices.length - 1; i++) {
                 DataFile df = this.dataFiles.get(indices[i]);
                 if (df.isUnUsed() || df.getLength() < FILE_SIZE) {
-                    throw new IllegalStateException("·Çµ±Ç°ÎÄ¼şµÄ×´Ì¬ÊÇ´óÓÚµÈÓÚÎÄ¼ş¿é³¤¶È£¬²¢ÇÒÊÇused×´Ì¬");
+                    throw new IllegalStateException("éå½“å‰æ–‡ä»¶çš„çŠ¶æ€æ˜¯å¤§äºç­‰äºæ–‡ä»¶å—é•¿åº¦ï¼Œå¹¶ä¸”æ˜¯usedçŠ¶æ€");
                 }
             }
             Integer n = indices[indices.length - 1];
@@ -635,7 +635,7 @@ public class JournalStore implements Store, JournalStoreMBean {
             this.dataFile = this.dataFiles.get(n);
             this.logFile = this.logFiles.get(n);
         }
-        log.warn("»Ö¸´Êı¾İ£º" + this.size());
+        log.warn("æ¢å¤æ•°æ®ï¼š" + this.size());
     }
 
 
@@ -655,19 +655,19 @@ public class JournalStore implements Store, JournalStoreMBean {
      * @see com.taobao.common.store.Store#update(byte[], byte[])
      */
     public boolean update(byte[] key, byte[] data) throws IOException {
-        // ¶ÔÓÚUpdateµÄÏûÏ¢£¬ÎÒÃÇĞ´ÈëOpCodeÎªUpdateµÄÈÕÖ¾¡£
+        // å¯¹äºUpdateçš„æ¶ˆæ¯ï¼Œæˆ‘ä»¬å†™å…¥OpCodeä¸ºUpdateçš„æ—¥å¿—ã€‚
         BytesKey k = new BytesKey(key);
         OpItem op = this.indices.get(k);
         if (null != op) {
             this.indices.remove(k);
             OpItem o = this.innerAdd(key, data, -1, false);
-            if (o.number != op.number) {
-                // ²»ÔÚÍ¬Ò»¸öÎÄ¼şÉÏ¸üĞÂ£¬²Å½øĞĞÉ¾³ı¡£
+            if (o.fileSerialNumber != op.fileSerialNumber) {
+                // ä¸åœ¨åŒä¸€ä¸ªæ–‡ä»¶ä¸Šæ›´æ–°ï¼Œæ‰è¿›è¡Œåˆ é™¤ã€‚
                 this.innerRemove(op, k, false);
             }
             else {
-                // Í¬Ò»¸öÎÄ¼şÉÏ¸üĞÂ£¬¼õÉÙDataFileÒıÓÃ£¬ÒòÎªaddµÄÊ±ºò»áÌí¼Ó
-                DataFile df = this.dataFiles.get(Integer.valueOf(op.number));
+                // åŒä¸€ä¸ªæ–‡ä»¶ä¸Šæ›´æ–°ï¼Œå‡å°‘DataFileå¼•ç”¨ï¼Œå› ä¸ºaddçš„æ—¶å€™ä¼šæ·»åŠ 
+                DataFile df = this.dataFiles.get(Integer.valueOf(op.fileSerialNumber));
                 df.decrement();
             }
             return true;
@@ -699,7 +699,7 @@ public class JournalStore implements Store, JournalStoreMBean {
     /*
      * (non-Javadoc)
      *
-     * @see com.taobao.common.store.journal.JournalStoreMBean#getNumber()
+     * @see com.taobao.common.store.journal.JournalStoreMBean#getFileSerialNumber()
      */
     public int getNumber() {
         return this.number.get();
@@ -834,9 +834,9 @@ public class JournalStore implements Store, JournalStoreMBean {
 
 
     /**
-     * ¶ÔÊı¾İÎÄ¼ş½øĞĞ¼ì²é£¬²¢×÷³öÏàÓ¦µÄ´¦Àí£º
+     * å¯¹æ•°æ®æ–‡ä»¶è¿›è¡Œæ£€æŸ¥ï¼Œå¹¶ä½œå‡ºç›¸åº”çš„å¤„ç†ï¼š
      *
-     * 1.Êı¾İ³¬¹ıÖ¸¶¨µÄRemoveÊ±¼ä,½«»áÖ±½ÓÉ¾³ı 2.Êı¾İ³¬¹ıÖ¸¶¨µÄCompactÊ±¼ä£¬ÏÈRemoveÔÙAdd
+     * 1.æ•°æ®è¶…è¿‡æŒ‡å®šçš„Removeæ—¶é—´,å°†ä¼šç›´æ¥åˆ é™¤ 2.æ•°æ®è¶…è¿‡æŒ‡å®šçš„Compactæ—¶é—´ï¼Œå…ˆRemoveå†Add
      *
      * @throws IOException
      */
@@ -845,7 +845,7 @@ public class JournalStore implements Store, JournalStoreMBean {
         BytesKey key = null;
         long now = System.currentTimeMillis();
         long time;
-        log.warn("Store4jÊı¾İÎÄ¼şÕûÀí¿ªÊ¼...");
+        log.warn("Store4jæ•°æ®æ–‡ä»¶æ•´ç†å¼€å§‹...");
         while (keys.hasNext()) {
             key = new BytesKey(keys.next());
             time = this.lastModifiedMap.get(key);
@@ -856,11 +856,11 @@ public class JournalStore implements Store, JournalStoreMBean {
                 this.reuse(key.getData(), true);
             }
         }
-        log.warn("Store4jÊı¾İÎÄ¼şÕûÀíÍê±Ï...");
+        log.warn("Store4jæ•°æ®æ–‡ä»¶æ•´ç†å®Œæ¯•...");
     }
 
     /**
-     * Êı¾İÎÄ¼ş¼ì²éµÄºóÌ¨Ïß³Ì£¬Ö÷ÒªÄ¿µÄÊÇÎªÁËStore4jÊı¾İÎÄ¼şÊİÉí£¬×öµÄ¹¤×÷ÈçÏÂ£º
+     * æ•°æ®æ–‡ä»¶æ£€æŸ¥çš„åå°çº¿ç¨‹ï¼Œä¸»è¦ç›®çš„æ˜¯ä¸ºäº†Store4jæ•°æ®æ–‡ä»¶ç˜¦èº«ï¼Œåšçš„å·¥ä½œå¦‚ä¸‹ï¼š
      */
     class DataFileCheckThread implements Runnable {
 

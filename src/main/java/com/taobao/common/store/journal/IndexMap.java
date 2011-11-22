@@ -8,13 +8,13 @@ import com.taobao.common.store.util.BytesKey;
 
 
 /**
- * 
- * 
- * Ë÷ÒıMap
- * 
+ *
+ *
+ * ç´¢å¼•Map
+ *
  * @author boyan
- * 
- * @since 1.0, 2009-10-20 ÉÏÎç10:49:42
+ *
+ * @since 1.0, 2009-10-20 ä¸Šåˆ10:49:42
  */
 
 public interface IndexMap {
