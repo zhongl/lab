@@ -22,7 +22,6 @@ package com.taobao.common.store.journal;
 import com.google.common.base.Objects;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 
 /**
@@ -62,7 +61,13 @@ public class OpItem {
 
     @Override
     public boolean equals(Object obj) {
-        return Objects.equal(this, obj);
+        if (!(obj instanceof OpItem)) return false;
+        OpItem that = (OpItem) obj;
+        return Objects.equal(this.op, that.op) &&
+                Objects.equal(this.key, that.key) &&
+                Objects.equal(this.fileSerialNumber, that.fileSerialNumber) &&
+                Objects.equal(this.offset, that.offset) &&
+                Objects.equal(this.length, that.length);
     }
 
     /**
