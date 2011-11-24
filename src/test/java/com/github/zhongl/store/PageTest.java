@@ -116,7 +116,6 @@ public class PageTest {
         page = Page.openOn(file).build();
     }
 
-
     private Item item(String str) {
         return new Item(str.getBytes());
     }

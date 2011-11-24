@@ -7,21 +7,4 @@ import java.io.IOException;
  * <p/>
  * <a href="mailto:zhong.lunfu@gmail.com">zhongl</a>
  */
-public class OverflowException extends IOException {
-
-    public OverflowException() {
-        super();
-    }
-
-    public OverflowException(String message) {
-        super(message);
-    }
-
-    public OverflowException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public OverflowException(Throwable cause) {
-        super(cause);
-    }
-}
+public class OverflowException extends IOException {}

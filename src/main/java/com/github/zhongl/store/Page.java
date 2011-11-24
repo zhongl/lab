@@ -88,9 +88,7 @@ public class Page implements Closeable {
 
         private Appender() throws IOException {
             super(new RandomAccessFile(file, "rw"));
-            if (randomAccessFile.length() < bytesCapacity) {
-                randomAccessFile.seek(randomAccessFile.length());
-            }
+            randomAccessFile.seek(randomAccessFile.length());
         }
 
         /**
