@@ -53,14 +53,22 @@ public class PageTest {
     @Test(expected = OverflowException.class)
     public void appendIfPageHasNotEnoughCapacity() throws Exception {
         file = testFile("appendWhilePageIsFull.bin");
-        page = Page.openOn(file).bytesCapacity(9).createIfNotExist().build();
+        page = Page.openOn(file).bytesCapacity(12).createIfNotExist().build();
         page.appender().append(item("1234567890"));
     }
 
     @Test
-    public void appendExistPageWithNewBytesCapacity() throws Exception {
+    public void newBytesCapacityIsNotWorkingForExistPage() throws Exception {
+        file = testFile("newBytesCapacityIsNotWorkingForExistPage.bin");
+        Page.openOn(file).createIfNotExist().bytesCapacity(12).build();
+        page = Page.openOn(file).bytesCapacity(64).build();
+        assertThat(page.bytesCapacity(), is(12L));
+    }
 
-        //To change body of created methods use File | Settings | File Templates.
+    @Test(expected = IllegalArgumentException.class)
+    public void createPageWithBytesCapacityLessThan12() throws Exception {
+        file = testFile("createPageWithBytesCapacityLessThan12");
+        Page.openOn(file).createIfNotExist().bytesCapacity(11);
     }
 
     @Test

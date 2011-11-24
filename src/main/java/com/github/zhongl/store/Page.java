@@ -1,5 +1,6 @@
 package com.github.zhongl.store;
 
+import com.google.common.io.ByteProcessor;
 import com.google.common.io.Files;
 import com.google.common.primitives.Longs;
 
@@ -9,13 +10,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * {@link com.github.zhongl.store.Page} File structure :
  * <ul>
  * <p/>
- * <li>{@link com.github.zhongl.store.Page} = {@link com.github.zhongl.store.Item}* {@link com.github.zhongl.store.ItemIndex}* itemSize:Integer</li>
- * <li>{@link com.github.zhongl.store.Item} = Byte*</li>
- * <li>{@link com.github.zhongl.store.ItemIndex} = offset:Long length:Integer</li>
+ * <li>{@link com.github.zhongl.store.Page} = bytesCapacity:4bytes {@link com.github.zhongl.store.Item}* </li>
+ * <li>{@link com.github.zhongl.store.Item} = length:4bytes bytes</li>
  * </ul>
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
@@ -50,6 +52,10 @@ public class Page implements Closeable {
     public void close() throws IOException {
         appender.close();
         getter.close();
+    }
+
+    public long bytesCapacity() {
+        return bytesCapacity;
     }
 
     private abstract class Operator implements Closeable {
@@ -115,6 +121,14 @@ public class Page implements Closeable {
             super(new RandomAccessFile(file, "r"));
         }
 
+        /**
+         * Get a {@link com.github.zhongl.store.Item} by offset from a {@link com.github.zhongl.store.Page}.
+         *
+         * @param offset
+         *
+         * @return
+         * @throws IOException
+         */
         public Item get(long offset) throws IOException {
             seek(offset);
             return Item.readFrom(randomAccessFile);
@@ -138,41 +152,66 @@ public class Page implements Closeable {
             this.file = file;
         }
 
+        /** {@link com.github.zhongl.store.Page} will be create if it does not exist. */
         public Builder createIfNotExist() {
             create = true;
             return this;
         }
 
+        /** {@link com.github.zhongl.store.Page} will be overwrote if it already exists. */
         public Builder overwriteIfExist() {
             overwrite = true;
             return this;
         }
 
+        /**
+         * {@link com.github.zhongl.store.Page} will use this value as it capacity of bytes only if it is new one or overwrite.
+         *
+         * @param value should not less than {@link com.github.zhongl.store.Page#SKIP_CAPACITY_BYTES} + {@link com.github.zhongl.store.Item#LENGTH_BYTES},
+         *              default is 67108864 (64M).
+         */
+        public Builder bytesCapacity(long value) {
+            long minValue = Page.SKIP_CAPACITY_BYTES + Item.LENGTH_BYTES;
+            checkArgument(value >= minValue, "value should not less than %s", minValue);
+            bytesCapacity = value;
+            return this;
+        }
+
         public Page build() throws IOException {
             if (file.exists()) {
+                checkArgument(file.isFile(), "%s exists but is not a file.", file);
                 if (overwrite) format();
+                else loadBytesCapacity();
             } else {
-                if (!create)
-                    throw new IllegalArgumentException("Can't build a page on " + file
-                            + ", because it does not exist.");
+                checkArgument(create, "Can't build a page on %s, because it does not exist.", file);
                 Files.createParentDirs(file);
                 format();
-            }
-
-            if (!file.isFile()) {
-                throw new IllegalArgumentException(file + "exists but is not a file.");
             }
 
             return new Page(file, bytesCapacity);
         }
 
-        public Builder bytesCapacity(long value) {
-            bytesCapacity = value;
-            return this;
+        private void loadBytesCapacity() throws IOException {
+            bytesCapacity = Files.readBytes(file, new LoadBytesCapacityByteProcessor());
         }
 
         private void format() throws IOException {
             Files.write(Longs.toByteArray(bytesCapacity), file); // write item size 0 to the file.
+        }
+
+        private static class LoadBytesCapacityByteProcessor implements ByteProcessor<Long> {
+            private byte[] buf;
+
+            @Override
+            public boolean processBytes(byte[] buf, int off, int len) throws IOException {
+                this.buf = buf;
+                return false;
+            }
+
+            @Override
+            public Long getResult() {
+                return Longs.fromByteArray(buf);
+            }
         }
     }
 }
