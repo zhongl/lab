@@ -1,7 +1,6 @@
 package com.github.zhongl.store;
 
 import com.google.common.io.ByteProcessor;
-import com.google.common.io.Files;
 import com.google.common.primitives.Longs;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -11,6 +10,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.io.Files.*;
 
 /**
  * {@link com.github.zhongl.store.Page} File structure :
@@ -45,10 +45,22 @@ public class Page implements Closeable {
         return getter;
     }
 
+    /**
+     * Create a builder for Page.
+     *
+     * @param file backend of Page.
+     *
+     * @return {@link com.github.zhongl.store.Page.Builder}
+     */
     public static Builder openOn(File file) {
         return new Builder(file);
     }
 
+    /**
+     * Close both {@link com.github.zhongl.store.Page.Appender} and {@link com.github.zhongl.store.Page.Getter}.
+     *
+     * @throws IOException
+     */
     public void close() throws IOException {
         appender.close();
         getter.close();
@@ -184,7 +196,7 @@ public class Page implements Closeable {
                 else loadBytesCapacity();
             } else {
                 checkArgument(create, "Can't build a page on %s, because it does not exist.", file);
-                Files.createParentDirs(file);
+                createParentDirs(file);
                 format();
             }
 
@@ -192,11 +204,11 @@ public class Page implements Closeable {
         }
 
         private void loadBytesCapacity() throws IOException {
-            bytesCapacity = Files.readBytes(file, new LoadBytesCapacityByteProcessor());
+            bytesCapacity = readBytes(file, new LoadBytesCapacityByteProcessor());
         }
 
         private void format() throws IOException {
-            Files.write(Longs.toByteArray(bytesCapacity), file); // write item size 0 to the file.
+            write(Longs.toByteArray(bytesCapacity), file); // write item size 0 to the file.
         }
 
         private static class LoadBytesCapacityByteProcessor implements ByteProcessor<Long> {
