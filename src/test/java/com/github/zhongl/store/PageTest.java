@@ -1,42 +1,33 @@
 package com.github.zhongl.store;
 
 import com.google.common.io.Files;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import static com.github.zhongl.store.ItemTest.item;
 import static com.github.zhongl.store.Page.Builder.DEFAULT_BYTES_CAPACITY;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
-public class PageTest {
-    private static final String BASE_ROOT = "target/PageTest/";
+public class PageTest extends FileBase {
     public static final boolean CLOSE = true;
     public static final boolean FLUSH = false;
 
     private Page page;
-    private File file;
 
-    @Before
-    public void setUp() throws Exception {
-        new File(BASE_ROOT).mkdirs();
-    }
-
-    @After
+    @Override
     public void tearDown() throws Exception {
         if (page != null) page.close();
-        if (file != null && file.exists()) file.delete();
+        super.tearDown();
     }
 
     @Test
     public void createPageAndAppendAndClose() throws Exception {
-        file = testFile("createPageAndAppendAndClose.bin");
+        file = testFile("createPageAndAppendAndClose");
         assertThat(file.exists(), is(false));
         page = Page.openOn(file).createIfNotExist().build();
         assertAppendAndDurableBy(CLOSE);
@@ -44,7 +35,7 @@ public class PageTest {
 
     @Test
     public void createPageAndAppendAndFlush() throws Exception {
-        file = testFile("createPageAndAppendAndFlush.bin");
+        file = testFile("createPageAndAppendAndFlush");
         assertThat(file.exists(), is(false));
         page = Page.openOn(file).createIfNotExist().build();
         assertAppendAndDurableBy(FLUSH);
@@ -52,14 +43,14 @@ public class PageTest {
 
     @Test(expected = OverflowException.class)
     public void appendIfPageHasNotEnoughCapacity() throws Exception {
-        file = testFile("appendWhilePageIsFull.bin");
+        file = testFile("appendWhilePageIsFull");
         page = Page.openOn(file).bytesCapacity(12).createIfNotExist().build();
         page.appender().append(item("1234567890"));
     }
 
     @Test
     public void newBytesCapacityIsNotWorkingForExistPage() throws Exception {
-        file = testFile("newBytesCapacityIsNotWorkingForExistPage.bin");
+        file = testFile("newBytesCapacityIsNotWorkingForExistPage");
         Page.openOn(file).createIfNotExist().bytesCapacity(12).build();
         page = Page.openOn(file).bytesCapacity(64).build();
         assertThat(page.bytesCapacity(), is(12L));
@@ -73,7 +64,7 @@ public class PageTest {
 
     @Test
     public void appendExistPage() throws Exception {
-        file = testFile("appendToExitPage.bin");
+        file = testFile("appendToExitPage");
 
         // create a page and append one item
         page = Page.openOn(file).createIfNotExist().build();
@@ -92,7 +83,7 @@ public class PageTest {
 
     @Test
     public void overwriteExistPage() throws Exception {
-        file = testFile(" overwriteExistPage.bin");
+        file = testFile(" overwriteExistPage");
         Files.append("hi", file, Charset.defaultCharset());
 
         assertThat(file.exists(), is(true));
@@ -105,7 +96,7 @@ public class PageTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void openWithNonExistFile() throws Exception {
-        file = testFile("openWithNonExistFile.bin");
+        file = testFile("openWithNonExistFile");
         page = Page.openOn(file).build();
     }
 
@@ -114,10 +105,6 @@ public class PageTest {
         file = testFile("openWithDirectory");
         file.mkdirs();
         page = Page.openOn(file).build();
-    }
-
-    private Item item(String str) {
-        return new Item(str.getBytes());
     }
 
     private void assertAppendAndDurableBy(boolean close) throws IOException {
@@ -156,7 +143,4 @@ public class PageTest {
         assertThat(Files.toByteArray(file), is(toBytes(bytesCapacity, items)));
     }
 
-    private File testFile(String name) {
-        return new File(BASE_ROOT, name);
-    }
 }
