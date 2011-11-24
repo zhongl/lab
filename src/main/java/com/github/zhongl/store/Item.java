@@ -2,7 +2,7 @@ package com.github.zhongl.store;
 
 import com.google.common.base.Objects;
 
-import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -13,11 +13,13 @@ import java.util.Arrays;
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
-@NotThreadSafe
+@ThreadSafe
 public class Item {
+    public static final long LENGTH_BYTES = 4;
     private final byte[] bytes;
 
-    public static Item readFrom(DataInput dataInput, int length) throws IOException {
+    public static Item readFrom(DataInput dataInput) throws IOException {
+        int length = dataInput.readInt();
         byte[] bytes = new byte[length];
         dataInput.readFully(bytes);
         return new Item(bytes);
@@ -27,11 +29,12 @@ public class Item {
         this.bytes = bytes;
     }
 
-    public int byteLength() {
+    public int length() {
         return bytes.length;
     }
 
     public void writeTo(DataOutput output) throws IOException {
+        output.writeInt(length());
         output.write(bytes);
     }
 

@@ -7,14 +7,18 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import static com.github.zhongl.store.Page.Builder.DEFAULT_BYTES_CAPACITY;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
 public class PageTest {
     private static final String BASE_ROOT = "target/PageTest/";
+    public static final boolean CLOSE = true;
+    public static final boolean FLUSH = false;
 
     private Page page;
     private File file;
@@ -31,39 +35,51 @@ public class PageTest {
     }
 
     @Test
-    public void appendIfPageHasNotEnoughCapacity() throws Exception {
-        file = testFile("appendWhilePageIsFull.bin");
-        page = Page.openOn(file).bytesCapacity(9).createIfNotExist().build();
-        boolean append = page.appender().append(item("1234567890"));
-        assertThat(append, is(false));
+    public void createPageAndAppendAndClose() throws Exception {
+        file = testFile("createPageAndAppendAndClose.bin");
+        assertThat(file.exists(), is(false));
+        page = Page.openOn(file).createIfNotExist().build();
+        assertAppendAndDurableBy(CLOSE);
     }
 
     @Test
-    public void appendToExistPage() throws Exception {
+    public void createPageAndAppendAndFlush() throws Exception {
+        file = testFile("createPageAndAppendAndFlush.bin");
+        assertThat(file.exists(), is(false));
+        page = Page.openOn(file).createIfNotExist().build();
+        assertAppendAndDurableBy(FLUSH);
+    }
+
+    @Test(expected = OverflowException.class)
+    public void appendIfPageHasNotEnoughCapacity() throws Exception {
+        file = testFile("appendWhilePageIsFull.bin");
+        page = Page.openOn(file).bytesCapacity(9).createIfNotExist().build();
+        page.appender().append(item("1234567890"));
+    }
+
+    @Test
+    public void appendExistPageWithNewBytesCapacity() throws Exception {
+
+        //To change body of created methods use File | Settings | File Templates.
+    }
+
+    @Test
+    public void appendExistPage() throws Exception {
         file = testFile("appendToExitPage.bin");
 
         // create a page and append one item
         page = Page.openOn(file).createIfNotExist().build();
         Item item1 = item("item1");
-        page.appender().append(item1);
+        long offset1 = page.appender().append(item1);
         page.close();
 
         // open it and append again
         page = Page.openOn(file).build();
         Item item2 = item("item2");
-        page.appender().append(item2);
+        long offset2 = page.appender().append(item2);
 
-        assertThat(page.itemSize(), is(2));
-        assertThat(page.getter().get(0), is(item1));
-        assertThat(page.getter().get(1), is(item2));
-    }
-
-    @Test
-    public void appendToNotExistPage() throws Exception {
-        file = testFile("appendToNotExistPage.bin");
-        assertThat(file.exists(), is(false));
-        page = Page.openOn(file).createIfNotExist().build();
-        assertAppendTo(page);
+        assertThat(page.getter().get(offset1), is(item1));
+        assertThat(page.getter().get(offset2), is(item2));
     }
 
     @Test
@@ -76,7 +92,7 @@ public class PageTest {
 
         page = Page.openOn(file).overwriteIfExist().build();
 
-        assertAppendTo(page);
+        assertAppendAndDurableBy(CLOSE);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -92,23 +108,48 @@ public class PageTest {
         page = Page.openOn(file).build();
     }
 
-    private void assertAppendTo(Page page) throws IOException {
-        assertThat(page.itemSize(), is(0));
 
-        Item item1 = item("item1");
-        Item item2 = item("item2");
-        Item item3 = item("item3");
-
-        assertThat(page.appender().append(item1), is(true));
-        assertThat(page.appender().append(item2), is(true));
-        assertThat(page.appender().append(item3), is(true));
-        assertThat(page.itemSize(), is(3));
-        assertThat(page.getter().get(0), is(item1));
-        assertThat(page.getter().get(1), is(item2));
-        assertThat(page.getter().get(2), is(item3));
+    private Item item(String str) {
+        return new Item(str.getBytes());
     }
 
-    private Item item(String str) {return new Item(str.getBytes());}
+    private void assertAppendAndDurableBy(boolean close) throws IOException {
+        assertThat(page.appender().append(item("item1")), is(0L));
+        assertThat(page.appender().append(item("item2")), is(9L));
+        if (close) {
+            page.close();
+        } else {
+            page.appender().flush();
+        }
+        assertPageContentOnDiskIs(DEFAULT_BYTES_CAPACITY, "item1".getBytes(), "item2".getBytes());
+    }
 
-    private File testFile(String child) {return new File(BASE_ROOT, child);}
+    private byte[] toBytes(long bytesCapacity, byte[][] items) {
+        int lengthBytes = 4;
+        int length = 8;
+
+        for (byte[] item : items) {
+            length += item.length + lengthBytes;
+        }
+
+        byte[] union = new byte[length];
+
+        ByteBuffer buffer = ByteBuffer.wrap(union);
+
+        buffer.putLong(bytesCapacity);
+        for (byte[] item : items) {
+            buffer.putInt(item.length);
+            buffer.put(item);
+        }
+        return union;
+    }
+
+
+    private void assertPageContentOnDiskIs(long bytesCapacity, byte[]... items) throws IOException {
+        assertThat(Files.toByteArray(file), is(toBytes(bytesCapacity, items)));
+    }
+
+    private File testFile(String name) {
+        return new File(BASE_ROOT, name);
+    }
 }

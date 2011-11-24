@@ -1,15 +1,13 @@
 package com.github.zhongl.store;
 
 import com.google.common.io.Files;
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * {@link com.github.zhongl.store.Page} File structure :
@@ -24,33 +22,32 @@ import java.util.List;
  */
 @NotThreadSafe
 public class Page implements Closeable {
-    public static final int ITEM_SIZE_BYTES = 4/* item size takes 4 bytes */;
+    public static final int SKIP_CAPACITY_BYTES = 8;
     private final File file;
     private final long bytesCapacity;
     private final Appender appender;
     private final Getter getter;
-    private final List<ItemIndex> itemIndices;
 
     private Page(File file, long bytesCapacity) throws IOException {
         this.file = file;
         this.bytesCapacity = bytesCapacity;
-        itemIndices = new ArrayList<ItemIndex>();
         getter = new Getter();
         appender = new Appender();
     }
 
-    public int itemSize() {
-        return itemIndices.size();
+    public Appender appender() {
+        return appender;
     }
 
-    public Appender appender() { return appender; }
+    public Getter getter() {
+        return getter;
+    }
 
-    public Getter getter() { return getter; }
-
-    public static Builder openOn(File file) { return new Builder(file); }
+    public static Builder openOn(File file) {
+        return new Builder(file);
+    }
 
     public void close() throws IOException {
-        appender.flush();
         appender.close();
         getter.close();
     }
@@ -58,7 +55,9 @@ public class Page implements Closeable {
     private abstract class Operator implements Closeable {
         protected final RandomAccessFile randomAccessFile;
 
-        public Operator(RandomAccessFile randomAccessFile) {this.randomAccessFile = randomAccessFile;}
+        public Operator(RandomAccessFile randomAccessFile) {
+            this.randomAccessFile = randomAccessFile;
+        }
 
         @Override
         public void close() throws IOException {
@@ -71,14 +70,9 @@ public class Page implements Closeable {
 
         private Appender() throws IOException {
             super(new RandomAccessFile(file, "rw"));
-            if (itemSize() > 0) {
-                seekFilePointerToEndOfLastItem();
+            if (randomAccessFile.length() < bytesCapacity) {
+                randomAccessFile.seek(randomAccessFile.length());
             }
-        }
-
-        private void seekFilePointerToEndOfLastItem() throws IOException {
-            ItemIndex lastItemIndex = itemIndices.get(itemSize() - 1);
-            randomAccessFile.seek(lastItemIndex.offset() + lastItemIndex.length());
         }
 
         /**
@@ -86,19 +80,17 @@ public class Page implements Closeable {
          * <p/>
          * Caution: item will not sync to disk util {@link com.github.zhongl.store.Page.Appender#flush()} invoked.
          *
-         * @param item {@link com.github.zhongl.store.Item}
+         * @param item {@link Item}
          *
-         * @return false if page has not enough capacity for new item, else true.
+         * @return offset of the {@link com.github.zhongl.store.Item}.
+         * @throws OverflowException if no remains for new item.
          * @throws IOException
          */
-        public boolean append(Item item) throws IOException {
-            if (overBytesCapacityWith(item.byteLength())) return false;
-
-            long offset = randomAccessFile.getFilePointer();
-            ItemIndex itemIndex = new ItemIndex(offset, item.byteLength());
-            itemIndices.add(itemIndex);
+        public long append(Item item) throws IOException {
+            checkOverFlowIfAppend(item.length());
+            long offset = randomAccessFile.getFilePointer() - SKIP_CAPACITY_BYTES;
             item.writeTo(randomAccessFile);
-            return true;
+            return offset;
         }
 
         /**
@@ -107,27 +99,12 @@ public class Page implements Closeable {
          * @throws IOException
          */
         public void flush() throws IOException {
-            appendItemIndicesToFile();
-            appendItemSizeToFile();
-            flushToDisk();
-            seekFilePointerToEndOfLastItem();
-        }
-
-        private boolean overBytesCapacityWith(int length) throws IOException {
-            return randomAccessFile.getFilePointer() + length + 1L > bytesCapacity;
-        }
-
-        private void flushToDisk() throws IOException {
             randomAccessFile.getChannel().force(true);
         }
 
-        private void appendItemSizeToFile() throws IOException {
-            randomAccessFile.writeInt(itemSize());
-        }
-
-        private void appendItemIndicesToFile() throws IOException {
-            for (ItemIndex itemIndex : itemIndices)
-                itemIndex.writeTo(randomAccessFile);
+        private void checkOverFlowIfAppend(int length) throws IOException {
+            long appendedLength = randomAccessFile.getFilePointer() + length + Item.LENGTH_BYTES;
+            if (appendedLength > bytesCapacity) throw new OverflowException();
         }
 
     }
@@ -136,56 +113,50 @@ public class Page implements Closeable {
 
         private Getter() throws IOException {
             super(new RandomAccessFile(file, "r"));
-            loadItemIndices();
         }
 
-        public Item get(int index) throws IOException {
-            ItemIndex itemIndex = itemIndices.get(index);
-            randomAccessFile.seek(itemIndex.offset());
-            return Item.readFrom(randomAccessFile, itemIndex.length());
+        public Item get(long offset) throws IOException {
+            seek(offset);
+            return Item.readFrom(randomAccessFile);
         }
 
-        private void loadItemIndices() throws IOException {
-            int itemSize = readItemSize();
-            int bytesOfItemIndices = ItemIndex.BYTES * itemSize;
-            long beginOfItemIndices = randomAccessFile.length() - bytesOfItemIndices - ITEM_SIZE_BYTES;
-            randomAccessFile.seek(beginOfItemIndices);
-            for (int i = 0; i < itemSize; i++) {
-                itemIndices.add(ItemIndex.readFrom(randomAccessFile));
-            }
-        }
-
-        private int readItemSize() throws IOException {
-            long beginOfItemSize = randomAccessFile.length() - ITEM_SIZE_BYTES;
-            randomAccessFile.seek(beginOfItemSize);
-            return randomAccessFile.readInt();
+        private void seek(long offset) throws IOException {
+            randomAccessFile.seek(SKIP_CAPACITY_BYTES + offset);
         }
     }
 
     public static class Builder {
-        private static final long DEFAULT_BYTES_CAPACITY = 64 * 1024 * 1024; // 64M;
+        public static final long DEFAULT_BYTES_CAPACITY = 64 * 1024 * 1024; // 64M;
 
         private final File file;
+
         private long bytesCapacity = DEFAULT_BYTES_CAPACITY;
+        private boolean create = false;
+        private boolean overwrite = false;
 
-        private Builder(File file) { this.file = file; }
+        private Builder(File file) {
+            this.file = file;
+        }
 
-        public Builder createIfNotExist() throws IOException {
-            if (file.exists()) return this;
-            Files.createParentDirs(file);
-            format();
+        public Builder createIfNotExist() {
+            create = true;
             return this;
         }
 
-        public Builder overwriteIfExist() throws IOException {
-            if (file.exists()) format();
+        public Builder overwriteIfExist() {
+            overwrite = true;
             return this;
         }
 
         public Page build() throws IOException {
-            if (!file.exists()) {
-                throw new IllegalArgumentException("Can't build a page on " + file
-                        + ", because it does not exist.");
+            if (file.exists()) {
+                if (overwrite) format();
+            } else {
+                if (!create)
+                    throw new IllegalArgumentException("Can't build a page on " + file
+                            + ", because it does not exist.");
+                Files.createParentDirs(file);
+                format();
             }
 
             if (!file.isFile()) {
@@ -201,7 +172,7 @@ public class Page implements Closeable {
         }
 
         private void format() throws IOException {
-            Files.write(Ints.toByteArray(0), file); // write item size 0 to the file.
+            Files.write(Longs.toByteArray(bytesCapacity), file); // write item size 0 to the file.
         }
     }
 }
