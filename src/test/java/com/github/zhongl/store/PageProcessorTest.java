@@ -1,6 +1,5 @@
 package com.github.zhongl.store;
 
-import com.google.common.util.concurrent.FutureCallback;
 import org.junit.Test;
 
 import static com.github.zhongl.store.ItemTest.item;
@@ -12,30 +11,26 @@ public class PageProcessorTest extends FileBase {
 
     @Override
     public void tearDown() throws Exception {
-        processor.shutdown();
+        if (processor != null) processor.shutdown();
         super.tearDown();
     }
 
     @Test
-    public void append() throws Exception {
-        file = testFile("append");
+    public void appendAndget() throws Exception {
+        file = testFile("appendAndget");
         processor = new PageProcessor(Page.openOn(file).createIfNotExist().build());
-        AssertFutureCallback<Long> callback = new AssertFutureCallback<Long>();
-        processor.append(item("item"), callback);
-        callback.assertResult(is(0L));
-    }
 
-    @Test
-    public void get() throws Exception {
-        // TODO get item by ItemIndex
-        file = testFile("get");
-        processor = new PageProcessor(Page.openOn(file).createIfNotExist().build());
         Item item = item("item");
-        processor.append(item, (FutureCallback<Long>) FutureCallbacks.NONE);
-        AssertFutureCallback<Item> callback = new AssertFutureCallback<Item>();
-        long offset = 0L;
-        processor.get(offset, callback);
-        callback.assertResult(is(item));
+        ItemIndex index = new ItemIndex(file, 0L);
+
+        AssertFutureCallback<ItemIndex> itemIndexCallback = new AssertFutureCallback<ItemIndex>();
+        AssertFutureCallback<Item> itemCallback = new AssertFutureCallback<Item>();
+
+        processor.append(item, itemIndexCallback);
+        itemIndexCallback.assertResult(is(index));
+
+        processor.get(index, itemCallback);
+        itemCallback.assertResult(is(item));
     }
 
     @Test

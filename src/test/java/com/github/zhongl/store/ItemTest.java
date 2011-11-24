@@ -17,8 +17,4 @@ public class ItemTest {
         assertThat(new Item("item".getBytes()).toString(), is("Item{bytes=[105, 116, 101, 109]}"));
     }
 
-    @Test
-    public void readFromFile() throws Exception {
-        //To change body of created methods use File | Settings | File Templates.
-    }
 }

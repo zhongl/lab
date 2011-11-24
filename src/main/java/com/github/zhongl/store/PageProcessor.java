@@ -2,16 +2,18 @@ package com.github.zhongl.store;
 
 import com.google.common.util.concurrent.FutureCallback;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
+@ThreadSafe
 public class PageProcessor {
 
     private static final int DEFAULT_BACKLOG = 10;
-    private final BlockingQueue<Runnable> tasks;
+    private final BlockingQueue<Runnable> tasks; // TODO monitor
     private final Page page;
     private volatile boolean running = true;
 
@@ -29,12 +31,14 @@ public class PageProcessor {
         running = false;
     }
 
-    public void append(Item item, FutureCallback<Long> callback) {
+    // TODO @Count monitor
+    // TODO @Elapse monitor
+    public void append(Item item, FutureCallback<ItemIndex> callback) {
         tasks.offer(new Append(item, callback));
     }
 
-    public void get(long offset, FutureCallback<Item> callback) {
-        tasks.offer(new Get(offset, callback));
+    public void get(ItemIndex itemIndex, FutureCallback<Item> callback) {
+        tasks.offer(new Get(itemIndex, callback));
     }
 
     private class Engine extends Thread {
@@ -56,9 +60,9 @@ public class PageProcessor {
     private class Append implements Runnable {
 
         private final Item item;
-        private final FutureCallback<Long> callback;
+        private final FutureCallback<ItemIndex> callback;
 
-        public Append(Item item, FutureCallback<Long> callback) {
+        public Append(Item item, FutureCallback<ItemIndex> callback) {
             this.item = item;
             this.callback = callback;
         }
@@ -66,7 +70,7 @@ public class PageProcessor {
         @Override
         public void run() {
             try {
-                callback.onSuccess(page.appender().append(item));
+                callback.onSuccess(new ItemIndex(page.file(), page.appender().append(item)));
             } catch (IOException e) {
                 callback.onFailure(e);
             }
@@ -74,18 +78,18 @@ public class PageProcessor {
     }
 
     private class Get implements Runnable {
-        private final long offset;
+        private final ItemIndex itemIndex;
         private final FutureCallback<Item> callback;
 
-        public Get(long offset, FutureCallback<Item> callback) {
-            this.offset = offset;
+        public Get(ItemIndex itemIndex, FutureCallback<Item> callback) {
+            this.itemIndex = itemIndex;
             this.callback = callback;
         }
 
         @Override
         public void run() {
             try {
-                callback.onSuccess(page.getter().get(offset));
+                callback.onSuccess(page.getter().get(itemIndex.offset()));
             } catch (IOException e) {
                 callback.onFailure(e);
             }

@@ -23,7 +23,7 @@ import static com.google.common.io.Files.*;
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 @NotThreadSafe
-public class Page implements Closeable {
+class Page implements Closeable {
     public static final int SKIP_CAPACITY_BYTES = 8;
     private final File file;
     private final long bytesCapacity;
@@ -68,6 +68,10 @@ public class Page implements Closeable {
 
     public long bytesCapacity() {
         return bytesCapacity;
+    }
+
+    public File file() {
+        return file;
     }
 
     private abstract class Operator implements Closeable {
