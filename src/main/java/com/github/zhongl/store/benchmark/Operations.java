@@ -3,10 +3,10 @@ package com.github.zhongl.store.benchmark;
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
 class Operations {
 
-    private final int add;
-    private final int get;
-    private final int update;
-    private final int remove;
+    final int add;
+    final int get;
+    final int update;
+    final int remove;
 
 
     public Operations(int add, int get, int update, int remove) {
@@ -20,7 +20,4 @@ class Operations {
         return add + get + update + remove;
     }
 
-    public boolean addRemainsOrCountDown() {
-        return false;  // TODO addRemainsOrCountDown
-    }
 }

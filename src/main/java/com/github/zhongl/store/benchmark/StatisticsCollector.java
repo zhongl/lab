@@ -18,6 +18,7 @@ public class StatisticsCollector extends Thread {
         while (running) {
             try {
                 Message message = mailbox.poll(500, TimeUnit.MILLISECONDS);
+                if (message == null) continue;
                 Statistics statistics = statisticsMap.get(message.operation);
                 if (statistics == null) {
                     statistics = new Statistics(message.operation);

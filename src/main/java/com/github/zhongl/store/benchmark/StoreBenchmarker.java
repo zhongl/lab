@@ -33,6 +33,7 @@ public class StoreBenchmarker {
     }
 
     public Collection<Statistics> benchmark() throws InterruptedException {
+        statisticsCollector.start();
         for (int i = 0; i < operations.total(); i++) {
             executorService.submit(operationFactory.create());
         }

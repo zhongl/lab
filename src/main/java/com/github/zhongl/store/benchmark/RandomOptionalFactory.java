@@ -1,10 +1,12 @@
 package com.github.zhongl.store.benchmark;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
+@ThreadSafe
 public class RandomOptionalFactory<T> implements Factory<T> {
     private final List<Factory<T>> options;
     private final Random random = new Random(1L); // use 1L for random the same sequance every time.

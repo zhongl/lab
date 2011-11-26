@@ -1,8 +1,10 @@
 package com.github.zhongl.store.benchmark;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
+@ThreadSafe
 public final class FixInstanceSizeFactory<T> implements Factory<T> {
 
     private final AtomicInteger count;
