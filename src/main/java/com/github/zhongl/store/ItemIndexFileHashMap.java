@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 import javax.annotation.concurrent.NotThreadSafe;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -12,16 +13,17 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * {@link ItemIndexFileHashMap} is a file-based hash map for {@link com.github.zhongl.store.ItemIndex}.
+ * {@link ItemIndexFileHashMap} is a dir-based hash map for {@link com.github.zhongl.store.ItemIndex}.
  * <p/>
  * It is a implemente of separate chain hash table, more infomation you can find in "Data Structures & Algorithms In Java".
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 @NotThreadSafe
-public class ItemIndexFileHashMap {
+public final class ItemIndexFileHashMap implements Closeable {
 
     private final File file;
+
     private final RandomAccessFile randomAccessFile;
     private final MappedByteBuffer mappedByteBuffer;
     private final Bucket[] buckets;
@@ -34,16 +36,8 @@ public class ItemIndexFileHashMap {
         buckets = createBuckets(initCapacity / Bucket.LENGTH);
     }
 
-    private Bucket[] createBuckets(int size) {
-        Bucket[] buckets = new Bucket[size];
-        for (int i = 0; i < buckets.length; i++) {
-            buckets[i] = new Bucket(slice(mappedByteBuffer, i * Bucket.LENGTH, Bucket.LENGTH));
-        }
-        return buckets;
-    }
-
-    private int hashAndMode(Md5Key key) {
-        return Math.abs(key.hashCode()) % buckets.length;
+    public File basefile() {
+        return file;
     }
 
     public ItemIndex put(Md5Key key, ItemIndex itemIndex) {
@@ -62,10 +56,22 @@ public class ItemIndexFileHashMap {
         return exit;
     }
 
-    public void clean() throws IOException {
-        // TODO clean mapped byte buffer
+    @Override
+    public void close() throws IOException {
+        DirectByteBufferCleaner.clean(mappedByteBuffer);
         randomAccessFile.close();
-        file.delete();
+    }
+
+    private int hashAndMode(Md5Key key) {
+        return Math.abs(key.hashCode()) % buckets.length;
+    }
+
+    private Bucket[] createBuckets(int size) {
+        Bucket[] buckets = new Bucket[size];
+        for (int i = 0; i < buckets.length; i++) {
+            buckets[i] = new Bucket(slice(mappedByteBuffer, i * Bucket.LENGTH, Bucket.LENGTH));
+        }
+        return buckets;
     }
 
     private void fsync() {

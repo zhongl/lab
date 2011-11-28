@@ -1,37 +1,55 @@
 package com.github.zhongl.store;
 
+import org.junit.After;
 import org.junit.Test;
 
 import static com.github.zhongl.store.ItemTest.item;
 import static org.hamcrest.Matchers.is;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
-public class PageEngineTest extends FileBase {
+public class PageEngineTest extends DirBase {
     private PageEngine engine;
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        if (engine != null) engine.shutdown();
-        super.tearDown();
+        if (engine != null) {
+            engine.shutdown();
+            engine.awaitForShutdown(Integer.MAX_VALUE);
+        }
     }
 
     @Test
     public void appendAndget() throws Exception {
-        file = testFile("appendAndget");
-        engine = new PageEngine(Page.openOn(file).createIfNotExist().build());
+        dir = testDir("appendAndget");
+        engine = new PageEngine(dir);
         engine.startup();
 
         Item item = item("item");
-        ItemIndex index = new ItemIndex(0, 0L);
+        Md5Key key = item.md5Key();
 
-        AssertFutureCallback<ItemIndex> itemIndexCallback = new AssertFutureCallback<ItemIndex>();
+        AssertFutureCallback<Md5Key> md5KeyCallback = new AssertFutureCallback<Md5Key>();
         AssertFutureCallback<Item> itemCallback = new AssertFutureCallback<Item>();
 
-        engine.append(item, itemIndexCallback);
-        itemIndexCallback.assertResult(is(index));
+        engine.append(item, md5KeyCallback);
+        md5KeyCallback.assertResult(is(key));
 
-        engine.get(index, itemCallback);
+        engine.get(key, itemCallback);
         itemCallback.assertResult(is(item));
+    }
+
+    @Test
+    public void newPageOnItOverflow() throws Exception {
+        // TODO newPageInPageOverflow
+    }
+
+    @Test
+    public void newItemIndexFileHashMapOnItOverFlow() throws Exception {
+        // TODO newItemIndexFileHashMapOnItOverFlow
+    }
+
+    @Test
+    public void loadExistDir() throws Exception {
+        // TODO loadExistDir
     }
 
     @Test

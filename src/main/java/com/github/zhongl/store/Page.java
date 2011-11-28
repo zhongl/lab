@@ -210,7 +210,7 @@ class Page implements Closeable {
         }
 
         private void format() throws IOException {
-            write(Longs.toByteArray(bytesCapacity), file); // write item size 0 to the file.
+            write(Longs.toByteArray(bytesCapacity), file); // write item size 0 to the dir.
         }
 
         private static class LoadBytesCapacityByteProcessor implements ByteProcessor<Long> {

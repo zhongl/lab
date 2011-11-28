@@ -29,11 +29,11 @@ public abstract class Engine {
         core = new Core();
     }
 
-    public final void startup() {
+    public void startup() {
         core.start();
     }
 
-    public final void shutdown() {
+    public void shutdown() {
         try {
             tasks.put(SHUTDOWN);
         } catch (InterruptedException e) {
@@ -41,11 +41,11 @@ public abstract class Engine {
         }
     }
 
-    public final void awaitForShutdown(long timeout) throws InterruptedException {
+    public void awaitForShutdown(long timeout) throws InterruptedException {
         core.join(timeout);
     }
 
-    public final boolean isRunning() {
+    public boolean isRunning() {
         return core.isAlive();
     }
 

@@ -14,7 +14,7 @@ public class ItemIndexFileHashMapBenchmark extends FileBase {
 
     @Override
     public void tearDown() throws Exception {
-        if (map != null) map.clean();
+        if (map != null) map.close();
         super.tearDown();
     }
 

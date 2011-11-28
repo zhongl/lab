@@ -17,6 +17,7 @@ import java.util.Arrays;
 public class Item {
     public static final long LENGTH_BYTES = 4;
     private final byte[] bytes;
+    private final Md5Key md5Key;
 
     public static Item readFrom(DataInput dataInput) throws IOException {
         int length = dataInput.readInt();
@@ -27,10 +28,15 @@ public class Item {
 
     public Item(byte[] bytes) {
         this.bytes = bytes;
+        md5Key = Md5Key.valueOf(this.bytes);
     }
 
     public int length() {
         return bytes.length;
+    }
+
+    public Md5Key md5Key() {
+        return md5Key;
     }
 
     public void writeTo(DataOutput output) throws IOException {
