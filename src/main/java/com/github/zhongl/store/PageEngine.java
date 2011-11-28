@@ -4,57 +4,35 @@ import com.google.common.util.concurrent.FutureCallback;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
 @ThreadSafe
-public class PageProcessor {
+public class PageEngine extends Engine {
 
     private static final int DEFAULT_BACKLOG = 10;
-    private final BlockingQueue<Runnable> tasks; // TODO monitor
-    private final Page page;
-    private volatile boolean running = true;
+    private static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
+    private static final long DEFAULT_TIMEOUT = 500L;
 
-    public PageProcessor(Page page) {
+    private final Page page;
+
+    public PageEngine(Page page) {
         this(page, DEFAULT_BACKLOG);
     }
 
-    public PageProcessor(Page page, int backlog) {
+    public PageEngine(Page page, int backlog) {
+        super(DEFAULT_TIMEOUT, DEFAULT_TIME_UNIT, backlog);
         this.page = page;
-        tasks = new LinkedBlockingQueue<Runnable>(backlog);
-        new Engine().start();
-    }
-
-    public void shutdown() {
-        running = false;
     }
 
     // TODO @Count monitor
     // TODO @Elapse monitor
-    public void append(Item item, FutureCallback<ItemIndex> callback) {
-        tasks.offer(new Append(item, callback));
+    public boolean append(Item item, FutureCallback<ItemIndex> callback) {
+        return submit(new Append(item, callback));
     }
 
-    public void get(ItemIndex itemIndex, FutureCallback<Item> callback) {
-        tasks.offer(new Get(itemIndex, callback));
-    }
-
-    private class Engine extends Thread {
-
-        @Override
-        public void run() {
-            while (running) {
-                try {
-                    Runnable task = tasks.poll(500, TimeUnit.MILLISECONDS);
-                    task.run();
-                } catch (InterruptedException e) {
-                    // continue
-                }
-            }
-        }
-
+    public boolean get(ItemIndex itemIndex, FutureCallback<Item> callback) {
+        return submit(new Get(itemIndex, callback));
     }
 
     private class Append implements Runnable {
@@ -70,7 +48,7 @@ public class PageProcessor {
         @Override
         public void run() {
             try {
-                callback.onSuccess(new ItemIndex(page.file(), page.appender().append(item)));
+                callback.onSuccess(new ItemIndex(0, page.appender().append(item)));
             } catch (IOException e) {
                 callback.onFailure(e);
             }

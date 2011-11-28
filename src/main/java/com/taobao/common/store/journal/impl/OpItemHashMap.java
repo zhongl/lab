@@ -1,70 +1,78 @@
 package com.taobao.common.store.journal.impl;
 
+import com.google.common.base.Preconditions;
+import com.taobao.common.store.journal.OpItem;
+import com.taobao.common.store.util.BytesKey;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
 
-import com.taobao.common.store.journal.OpItem;
-import com.taobao.common.store.util.BytesKey;
-
 
 /**
- *
  * 基于开放地址法，存储于硬盘上的HashMap
  *
  * @author boyan
- *
  * @since 1.0, 2009-10-20 上午11:27:07
  */
 
 public class OpItemHashMap {
-    private OpItemEntry[] table;
 
     public static final int DEFAULT_CAPACITY = 256;
 
+    private final OpItemEntry[] table;
+
     private final BitSet bitSet;
 
-    private File file;
+    private final File file;
 
-    private FileChannel channel;
+    private final RandomAccessFile randomAccessFile;
 
-    private MappedByteBuffer mappedByteBuffer;
+    private final MappedByteBuffer mappedByteBuffer;
 
 
     public OpItemHashMap(int capacity, String cacheFilePath, boolean force) throws IOException {
         if (capacity <= 0) {
             throw new IllegalArgumentException("capacity<=0");
         }
-        this.file = new File(cacheFilePath);
-        this.file.createNewFile();
+        this.file = createOrOverwriteFile(cacheFilePath);
         this.bitSet = new BitSet(OpItemEntry.SIZE * capacity);
-        this.channel = new RandomAccessFile(file, force ? "rws" : "rw").getChannel();
+        this.randomAccessFile = new RandomAccessFile(file, force ? "rws" : "rw");
         this.mappedByteBuffer =
-                this.channel.map(MapMode.READ_WRITE, OpItemEntry.SIZE * capacity / 2, OpItemEntry.SIZE * capacity);
+                randomAccessFile.getChannel().map(MapMode.READ_WRITE, OpItemEntry.SIZE * capacity / 2, OpItemEntry.SIZE * capacity);
         this.table = new OpItemEntry[capacity];
     }
 
-
-    private int hash(int keyHash, int i) {
-        return abs(hash1(keyHash) + i * hash2(keyHash)) % table.length; // 双重散列
+    private File createOrOverwriteFile(String cacheFilePath) {
+        File file = new File(cacheFilePath);
+        if (file.exists()) {
+            Preconditions.checkArgument(file.isFile(), "%s should be a file.", cacheFilePath);
+            Preconditions.checkArgument(file.delete(), "%s can't overwrite.", cacheFilePath);
+        }
+        file.getParentFile().mkdirs();
+        return file;
     }
 
 
-    private int hash1(int keyHash) {
-        return keyHash % table.length;
+    private int rehash(BytesKey key, int i) {
+        return abs(hash(key) + i * key.hashCode() % (table.length - 2)) % table.length; // 双重散列
     }
 
 
-    private int hashForKey(BytesKey k) {
-        int hash = k.hashCode();
-        return abs(hash);
+    private int hash(BytesKey key) {
+        return abs(key.hashCode()) % table.length;
     }
+
+
+//    private int hashForKey(BytesKey k) {
+//        int hash = k.hashCode();
+//        return abs(hash);
+//    }
 
 
     private int abs(int hash) {
@@ -75,43 +83,39 @@ public class OpItemHashMap {
     }
 
 
-    private int hash2(int keyHash) {
-        return keyHash % (table.length - 2);
-    }
-
-
     public boolean put(BytesKey key, OpItem value) throws IOException {
         if (this.loadFactor() > 0.75f) {
             return false;
         }
-        int keyHash = this.hashForKey(key);
-        int j = hash1(keyHash);
+        int j = hash(key);
         int offset = calcOffset(j);
         int i = 0;
-        int m = table.length;
         // 定位
-        while (this.table[j] != null && !isEntryDeleted(j) && this.bitSet.get(offset) && i < m) {
-            j = hash(keyHash, i++);
+        while (this.table[j] != null && !isEntryDeleted(j) && this.bitSet.get(offset) && i < table.length) {
+            j = rehash(key, i++);
             offset = calcOffset(j);
         }
+
         if (table[j] == null || table[j].isDeleted()) {
             table[j] = new OpItemEntry(value, false);
             byte[] buffer = table[j].encode();
             if (buffer != null) {
-                this.mappedByteBuffer.position(offset);
-                this.mappedByteBuffer.put(buffer, 0, buffer.length);
+                write(offset, buffer);
                 bitSet.set(offset, true);
             }
             // 从内存释放
             table[j].unload();
             return true;
-        }
-        else {
+        } else {
             return false;
         }
 
     }
 
+    private void write(int offset, byte[] buffer) {
+        this.mappedByteBuffer.position(offset);
+        this.mappedByteBuffer.put(buffer, 0, buffer.length);
+    }
 
     private int calcOffset(int j) {
         return j * OpItemEntry.SIZE;
@@ -126,10 +130,8 @@ public class OpItemHashMap {
         return this.table[j].isDeleted();
     }
 
-
     public OpItem get(BytesKey key) throws IOException {
-        int keyHash = this.hashForKey(key);
-        int j = hash1(keyHash);
+        int j = hash(key);
         int i = 0;
         int m = table.length;
         while (this.table[j] != null && i < m) {
@@ -139,15 +141,13 @@ public class OpItemHashMap {
             if (table[j].getOpItem() != null && Arrays.equals(table[j].getOpItem().getKey(), key.getData())) {
                 if (table[j].isDeleted()) {
                     return null;
-                }
-                else {
+                } else {
                     return table[j].getOpItem();
                 }
-            }
-            else {
+            } else {
                 table[j].unload();// 记住清除
             }
-            j = hash(keyHash, i++);
+            j = rehash(key, i++);
         }
         return null;
     }
@@ -155,8 +155,7 @@ public class OpItemHashMap {
 
     public OpItem remove(BytesKey key) throws IOException {
 
-        int keyHash = this.hashForKey(key);
-        int j = hash1(keyHash);
+        int j = hash(key);
         int i = 0;
         int m = table.length;
         while (this.table[j] != null && i < m) {
@@ -167,19 +166,17 @@ public class OpItemHashMap {
             if (table[j].getOpItem() != null && Arrays.equals(table[j].getOpItem().getKey(), key.getData())) {
                 if (table[j].isDeleted()) {
                     return null;
-                }
-                else {
+                } else {
                     table[j].setDeleted(true);
                     this.bitSet.set(offset, false);
                     // 写入磁盘
                     this.mappedByteBuffer.put(offset, DELETED);
                     return table[j].getOpItem();
                 }
-            }
-            else {
+            } else {
                 table[j].unload();// 切记unload
             }
-            j = hash(keyHash, i++);
+            j = rehash(key, i++);
         }
         return null;
 
@@ -187,10 +184,8 @@ public class OpItemHashMap {
 
 
     public void close() throws IOException {
-        if (this.channel != null) {
-            this.channel.close();
-            file.delete();
-        }
+        randomAccessFile.close();
+        file.delete();
     }
 
     class DiskIterator implements java.util.Iterator<BytesKey> {
@@ -238,8 +233,7 @@ public class OpItemHashMap {
                 this.currentIndex++;
                 this.lastRet++;
                 return key;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new IllegalStateException("Load OpItem fail", e);
             }
 
@@ -258,7 +252,6 @@ public class OpItemHashMap {
         }
 
     }
-
 
     public Iterator<BytesKey> iterator() {
         return new DiskIterator();

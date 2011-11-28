@@ -3,10 +3,9 @@ package com.github.zhongl.store.benchmark;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.taobao.common.store.Store;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -58,13 +57,7 @@ class OperationFactory implements Factory<Runnable> {
     }
 
     private byte[] md5(byte[] value) {
-        try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            md5.update(value);
-            return md5.digest();
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
+        return DigestUtils.md5(value);
     }
 
     private class AddFactory implements Factory<Runnable> {

@@ -1,17 +1,15 @@
 package com.taobao.common.store.journal.impl;
 
+import com.taobao.common.store.journal.OpItem;
+
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 
-import com.taobao.common.store.journal.OpItem;
-
 
 /**
- *
  * 存储在硬盘上的OpItem
  *
  * @author boyan
- *
  * @since 1.0, 2009-10-20 上午11:26:37
  */
 
@@ -53,8 +51,7 @@ public class OpItemEntry {
         if (!loadItem) {
             byte data = mappedByteBuffer.get();
             this.deleted = (data == (byte) 1 ? true : false);
-        }
-        else {
+        } else {
             byte[] bytes = new byte[SIZE];
             mappedByteBuffer.get(bytes, 0, SIZE);
             this.deleted = (bytes[0] == (byte) 1 ? true : false);
@@ -63,21 +60,18 @@ public class OpItemEntry {
         }
     }
 
-
     public byte[] encode() {
         if (this.opItem != null) {
             byte[] buffer = new byte[OpItemEntry.SIZE];
             if (this.deleted) {
                 buffer[0] = 1;
-            }
-            else {
+            } else {
                 buffer[0] = 0;
             }
             byte[] data = this.opItem.toByte();
             System.arraycopy(data, 0, buffer, 1, data.length);
             return buffer;
-        }
-        else {
+        } else {
             return null;
         }
     }
