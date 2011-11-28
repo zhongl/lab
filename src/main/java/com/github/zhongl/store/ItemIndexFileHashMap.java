@@ -1,5 +1,8 @@
 package com.github.zhongl.store;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.Closeable;
 import java.io.File;
@@ -40,12 +43,14 @@ public class ItemIndexFileHashMap implements Closeable {
         return buckets;
     }
 
-    public ItemIndex put(Md5Key key, ItemIndex itemIndex) {
-        return buckets[hashAndMode(key)].put(key, itemIndex);
-    }
-
     private int hashAndMode(Md5Key key) {
         return Math.abs(key.hashCode()) % buckets.length;
+    }
+
+    public ItemIndex put(Md5Key key, ItemIndex itemIndex) {
+        ItemIndex previous = buckets[hashAndMode(key)].put(key, itemIndex);
+        fsync();
+        return previous;
     }
 
     public ItemIndex get(Md5Key key) {
@@ -53,7 +58,9 @@ public class ItemIndexFileHashMap implements Closeable {
     }
 
     public ItemIndex remove(Md5Key key) {
-        return buckets[hashAndMode(key)].remove(key);
+        ItemIndex exit = buckets[hashAndMode(key)].remove(key);
+        fsync();
+        return exit;
     }
 
     @Override
@@ -63,10 +70,17 @@ public class ItemIndexFileHashMap implements Closeable {
         file.delete();
     }
 
+    private void fsync() {
+        try {
+            randomAccessFile.getChannel().force(false);
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
+    }
+
     private static ByteBuffer slice(ByteBuffer buffer, int offset, int length) {
         buffer.position(offset);
-        buffer.mark();
-        buffer.position(length);
+        buffer.limit(offset + length);
         return buffer.slice();
     }
 
@@ -102,11 +116,12 @@ public class ItemIndexFileHashMap implements Closeable {
                         if (slots[i].keyEquals(key)) return slots[i].replace(key, itemIndex);
                         break;
                     case RELEASED:
-                        if (firstRelease == -1) firstRelease = i;
+                        if (firstRelease < 0) firstRelease = i;
                         break;
                 }
                 // continue to check rest slots whether contain the key.
             }
+            Preconditions.checkState(firstRelease >= 0, "No slot for new item index."); // TODO resize map
             return slots[firstRelease].add(key, itemIndex);
         }
 

@@ -1,7 +1,7 @@
 package com.github.zhongl.store.benchmark;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
-class Operations {
+class StoreOperations {
 
     final int add;
     final int get;
@@ -9,7 +9,7 @@ class Operations {
     final int remove;
 
 
-    public Operations(int add, int get, int update, int remove) {
+    public StoreOperations(int add, int get, int update, int remove) {
         this.add = add;
         this.get = get;
         this.update = update;

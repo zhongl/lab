@@ -2,6 +2,8 @@ package com.github.zhongl.store.benchmark;
 
 import org.junit.Test;
 
+import java.util.concurrent.Callable;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -10,14 +12,19 @@ public class FixInstanceSizeFactoryTest {
 
     @Test
     public void returnNullIfOverFixSize() throws Exception {
-        Factory<String> stringFactory = new Factory<String>() {
+        CallableFactory runnablefactory = new CallableFactory() {
             @Override
-            public String create() {
-                return "something";
+            public Callable<?> create() {
+                return new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        return null;
+                    }
+                };
             }
         };
         int size = 5;
-        FixInstanceSizeFactory<String> factory = new FixInstanceSizeFactory<String>(size, stringFactory);
+        FixInstanceSizeFactory factory = new FixInstanceSizeFactory(size, runnablefactory);
 
         for (int i = 0; i < size; i++) {
             assertThat(factory.create(), is(notNullValue()));

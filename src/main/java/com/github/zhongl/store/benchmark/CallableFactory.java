@@ -1,6 +1,8 @@
 package com.github.zhongl.store.benchmark;
 
+import java.util.concurrent.Callable;
+
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
-public interface Factory<T> {
-    T create();
+public interface CallableFactory {
+    Callable<?> create();
 }

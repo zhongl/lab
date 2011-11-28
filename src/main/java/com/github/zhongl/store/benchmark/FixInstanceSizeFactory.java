@@ -1,22 +1,24 @@
 package com.github.zhongl.store.benchmark;
 
 import javax.annotation.concurrent.ThreadSafe;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
 @ThreadSafe
-public final class FixInstanceSizeFactory<T> implements Factory<T> {
+public final class FixInstanceSizeFactory implements CallableFactory {
 
     private final AtomicInteger count;
-    private final Factory<T> delegate;
+    private final CallableFactory delegate;
 
-    public FixInstanceSizeFactory(int size, Factory<T> delegate) {
+    public FixInstanceSizeFactory(int size, CallableFactory delegate) {
         this.delegate = delegate;
         count = new AtomicInteger(size);
     }
 
+
     @Override
-    public T create() {
+    public Callable<?> create() {
         return count.decrementAndGet() < 0 ? null : delegate.create();
     }
 }

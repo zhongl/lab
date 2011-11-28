@@ -47,6 +47,7 @@ public class StatisticsCollector extends Thread {
     }
 
     public void error(String opertion, Throwable t) {
+        t.printStackTrace();
         mailbox.offer(new Error(opertion, t));
     }
 

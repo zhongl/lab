@@ -17,7 +17,6 @@ public class StoreBenchmarkerTest extends FileBase {
         super.tearDown();
     }
 
-
     @Test
     public void journalStore() throws Exception {
         file = testFile("journalStore");
@@ -27,19 +26,14 @@ public class StoreBenchmarkerTest extends FileBase {
         boolean enabledIndexLRU = false;
 
         store = new JournalStore(path, name, force, enabledIndexLRU);
-        StoreBenchmarker benchmarker = buildBenchmarkerOf(store);
+        Benchmarker benchmarker = buildBenchmarkerOf(store);
         System.out.println(benchmarker.benchmark());
     }
 
-    private static StoreBenchmarker buildBenchmarkerOf(Store store) {
-        return StoreBenchmarker.of(store)
-                .valueBytes(1024)
-                .add(1000)
-                .get(1000)
-                .update(1000)
-                .remove(1000)
-                .concurrent(4)
-                .build();
+    private static Benchmarker buildBenchmarkerOf(Store store) {
+        StoreOperations storeOperations = new StoreOperations(1000, 1000, 1000, 1000);
+        StoreCallableFactory storeOperationFactory = new StoreCallableFactory(1024, store, storeOperations);
+        return new Benchmarker(storeOperationFactory, 4, storeOperations.total());
     }
 
 
