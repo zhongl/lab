@@ -20,7 +20,7 @@ public class ItemIndexFileHashMapTest extends FileBase {
 
     @Override
     public void tearDown() throws Exception {
-        if (map != null) map.close();
+        if (map != null) map.clean();
         super.tearDown();
     }
 
@@ -72,23 +72,11 @@ public class ItemIndexFileHashMapTest extends FileBase {
     }
 
     @Test
-    public void put141ItemIndexInOneBucket() throws Exception {
-        file = testFile("put141ItemIndexInOneBucket");
-        map = newItemIndexFileHashMap(1);
-
-        for (int i = 0; i < 141; i++) {
-            map.put(Md5Key.valueOf(Ints.toByteArray(i)), new ItemIndex(0, 0L));
-        }
-    }
-
-    @Test
     public void putItemIndexInReleasedSlot() throws Exception {
         file = testFile("putItemIndexInReleasedSlot");
         map = newItemIndexFileHashMap(1);
 
-        for (int i = 0; i < 141; i++) {
-            map.put(Md5Key.valueOf(Ints.toByteArray(i)), new ItemIndex(0, 0L));
-        }
+        put141ItemIndexInOneBucket();
 
         Md5Key key0 = Md5Key.valueOf(Ints.toByteArray(0));
         Md5Key key1 = Md5Key.valueOf(Ints.toByteArray(1));
@@ -114,9 +102,7 @@ public class ItemIndexFileHashMapTest extends FileBase {
         file = testFile("getAndRemoveByInvalidKey");
         map = newItemIndexFileHashMap(1);
 
-        for (int i = 0; i < 141; i++) {
-            map.put(Md5Key.valueOf(Ints.toByteArray(i)), new ItemIndex(0, 0L));
-        }
+        put141ItemIndexInOneBucket();
 
         Md5Key invalidKey = Md5Key.valueOf(Ints.toByteArray(141));
 
@@ -130,6 +116,21 @@ public class ItemIndexFileHashMapTest extends FileBase {
         map = newItemIndexFileHashMap(1);
         Files.write(new byte[] {3}, file);  // write a unknown slot state
         map.get(Md5Key.valueOf(Ints.toByteArray(1))); // trigger exception
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void noSlotForNewItemIndex() throws Exception {
+        file = testFile("noSlotForNewItemIndex");
+        put141ItemIndexInOneBucket();
+        Md5Key key141 = Md5Key.valueOf(Ints.toByteArray(141));
+        map.put(key141, new ItemIndex(0, 0L));  // trigger exception
+    }
+
+    private void put141ItemIndexInOneBucket() throws Exception {
+        map = newItemIndexFileHashMap(1);
+        for (int i = 0; i < 141; i++) {
+            map.put(Md5Key.valueOf(Ints.toByteArray(i)), new ItemIndex(0, 0L));
+        }
     }
 
     private ItemIndexFileHashMap newItemIndexFileHashMap(int buckets) throws IOException {

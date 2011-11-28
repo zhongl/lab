@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -15,12 +14,12 @@ import java.nio.channels.FileChannel;
 /**
  * {@link ItemIndexFileHashMap} is a file-based hash map for {@link com.github.zhongl.store.ItemIndex}.
  * <p/>
- * It implemented by separate chain hash table, more infomation you can find in "Data Structures & Algorithms In Java".
+ * It is a implemente of separate chain hash table, more infomation you can find in "Data Structures & Algorithms In Java".
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 @NotThreadSafe
-public class ItemIndexFileHashMap implements Closeable {
+public class ItemIndexFileHashMap {
 
     private final File file;
     private final RandomAccessFile randomAccessFile;
@@ -63,8 +62,7 @@ public class ItemIndexFileHashMap implements Closeable {
         return exit;
     }
 
-    @Override
-    public void close() throws IOException {
+    public void clean() throws IOException {
         // TODO clean mapped byte buffer
         randomAccessFile.close();
         file.delete();
@@ -121,7 +119,7 @@ public class ItemIndexFileHashMap implements Closeable {
                 }
                 // continue to check rest slots whether contain the key.
             }
-            Preconditions.checkState(firstRelease >= 0, "No slot for new item index."); // TODO resize map
+            Preconditions.checkState(firstRelease >= 0, "No slot for new item index.");
             return slots[firstRelease].add(key, itemIndex);
         }
 
