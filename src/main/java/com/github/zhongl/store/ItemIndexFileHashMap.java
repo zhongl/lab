@@ -135,7 +135,8 @@ public class ItemIndexFileHashMap implements Closeable {
 
         public ItemIndex remove(Md5Key key) {
             for (Slot slot : slots) {
-                if (slot.keyEquals(key)) return slot.release();
+                if (slot.state() == Slot.State.EMPTY) return null; // because rest slots are all empty
+                if (slot.state() == Slot.State.OCCUPIED && slot.keyEquals(key)) return slot.release();
             }
             return null;
         }
