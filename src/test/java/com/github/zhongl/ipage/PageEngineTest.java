@@ -41,9 +41,12 @@ public class PageEngineTest extends DirBase {
         itemCallback.assertResult(is(item));
     }
 
+
     @Test
-    public void newPageOnItOverflow() throws Exception {
-        dir = testDir("newPageOnItOverflow");
+    public void loadExistDir() throws Exception {
+        dir = testDir("loadExistDir");
+
+        // create exist dir
         engine = PageEngine.baseOn(dir).pageCapacity(4096).build();
         engine.startup();
 
@@ -57,22 +60,35 @@ public class PageEngineTest extends DirBase {
         }
 
         callback.awaitForDone();
+        engine.shutdown();
 
-        File page0 = new File(dir, 0 + PageEngine.PAGE_FILE_EXT);
-        File page1 = new File(dir, 1 + PageEngine.PAGE_FILE_EXT);
+        // load exist dir
+        engine = PageEngine.baseOn(dir).pageCapacity(4096).build();
+        engine.startup();
 
-        assertThat(page0.exists() && page0.isFile(), is(true));
-        assertThat(page1.exists() && page1.isFile(), is(true));
+        for (int i = 0; i < 4; i++) {
+            byte[] bytes = new byte[1024];
+            ByteBuffer.wrap(bytes).putInt(i);
+            callback = new AssertFutureCallback<Md5Key>();
+            engine.append(new Item(bytes), callback);
+        }
+
+        callback.awaitForDone();
+
+        assertThat(new File(dir, 0 + PageEngine.PAGE_FILE_EXT).exists(), is(true));
+        assertThat(new File(dir, 1 + PageEngine.PAGE_FILE_EXT).exists(), is(true));
+        assertThat(new File(dir, 2 + PageEngine.PAGE_FILE_EXT).exists(), is(true));
     }
 
     @Test
     public void newItemIndexFileHashMapOnItOverFlow() throws Exception {
-        // TODO newItemIndexFileHashMapOnItOverFlow
+        dir = testDir("newItemIndexFileHashMapOnItOverFlow");
+//        engine = PageEngine.baseOn()
     }
 
     @Test
-    public void loadExistDir() throws Exception {
-        // TODO loadExistDir
+    public void loadExistDirIfThereAreTwoIndexFile() throws Exception {
+        // TODO loadExistDirIfThereAreTwoIndexFile
     }
 
     @Test

@@ -91,7 +91,7 @@ public class ItemIndexFileHashMapTest extends FileBase {
         map.get(Md5Key.valueOf(Ints.toByteArray(1))); // trigger exception
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = OverflowException.class)
     public void noSlotForNewItemIndex() throws Exception {
         file = testFile("noSlotForNewItemIndex");
         put141ItemIndexInOneBucket();

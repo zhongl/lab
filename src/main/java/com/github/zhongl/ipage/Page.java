@@ -70,7 +70,7 @@ class Page implements Closeable {
         return bytesCapacity;
     }
 
-    public File file() {
+    public File baseFile() {
         return file;
     }
 
@@ -124,7 +124,7 @@ class Page implements Closeable {
 
         private void checkOverFlowIfAppend(int length) throws IOException {
             long appendedLength = randomAccessFile.getFilePointer() + length + Item.LENGTH_BYTES;
-            if (appendedLength > bytesCapacity) throw new OverflowException();
+            if (appendedLength > bytesCapacity) throw new OverflowException("No remains for new item.");
         }
 
     }

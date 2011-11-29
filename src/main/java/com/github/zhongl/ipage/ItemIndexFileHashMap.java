@@ -1,6 +1,5 @@
 package com.github.zhongl.ipage;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -125,7 +124,7 @@ public final class ItemIndexFileHashMap implements Closeable {
                 }
                 // continue to check rest slots whether contain the key.
             }
-            Preconditions.checkState(firstRelease >= 0, "No slot for new item index.");
+            if (firstRelease < 0) throw new OverflowException("No slot for new item index.");
             return slots[firstRelease].add(key, itemIndex);
         }
 

@@ -25,8 +25,9 @@ public class PageEngine extends Engine {
     private final long pageCapacity;
 
     private Page appendingPage;
+    private int appendingPageIndex = -1;
     private ItemIndexFileHashMap currentMap;
-    private int appendingPageIndex = 0;
+    private int currentMapIndex = -1;
 
     public PageEngine(final File dir, long pageCapacity) throws IOException {
         super(DEFAULT_TIMEOUT, DEFAULT_TIME_UNIT, DEFAULT_BACKLOG);
@@ -51,25 +52,41 @@ public class PageEngine extends Engine {
 
     private void createOrLoadDir() throws IOException {
         if (dir.exists()) {
-            throw new UnsupportedOperationException();
-            // TODO validate and load
+            scanDirAndLoadMaxFileNameIndex();
         } else {
             Preconditions.checkArgument(dir.mkdirs(), "Can't create dir %s", dir);
-            newAppendingPage();
-            newItemIndexFileHashMap(0 + "");
+        }
+        openAppendingPage();
+        openItemIndexFileHashMap();
+    }
+
+    private void scanDirAndLoadMaxFileNameIndex() {
+        String[] names = dir.list();
+        for (String name : names) {
+            if (name.endsWith(INDEX_FILE_EXT)) { // index file
+                currentMapIndex = Math.max(currentMapIndex, indexValueOf(name));
+            }
+            if (name.endsWith(PAGE_FILE_EXT)) { // page file
+                appendingPageIndex = Math.max(appendingPageIndex, indexValueOf(name));
+            }
         }
     }
 
-    private void newItemIndexFileHashMap(String name) throws IOException {
-        currentMap = new ItemIndexFileHashMap(new File(dir, name + INDEX_FILE_EXT), 4 * 1024 * 100); // TODO refactor init capacity
+    private int indexValueOf(String name) {
+        return Integer.parseInt(name.substring(0, name.indexOf('.')));
     }
 
-    private void newAppendingPage() throws IOException {
+    private void openItemIndexFileHashMap() throws IOException {
+        currentMapIndex++;
+        currentMap = new ItemIndexFileHashMap(new File(dir, currentMapIndex + INDEX_FILE_EXT), 4 * 1024 * 100); // TODO refactor init capacity
+    }
+
+    private void openAppendingPage() throws IOException {
+        appendingPageIndex++;
         this.appendingPage = Page.openOn(new File(dir, appendingPageIndex + PAGE_FILE_EXT))
                 .createIfNotExist()
                 .bytesCapacity(pageCapacity)
                 .build();
-        appendingPageIndex++;
     }
 
     // TODO @Count monitor
@@ -144,7 +161,7 @@ public class PageEngine extends Engine {
             try {
                 return appendingPage.appender().append(item);
             } catch (OverflowException e) {
-                newAppendingPage();
+                openAppendingPage();
                 return doAppend();
             }
         }
@@ -163,15 +180,12 @@ public class PageEngine extends Engine {
             ItemIndex itemIndex = currentMap.get(key);
             int pageIndex = itemIndex.pageIndex();
 
-            if (isAppendingPage(pageIndex)) return appendingPage.getter().get(itemIndex.offset());
+            if (appendingPageIndex == pageIndex) return appendingPage.getter().get(itemIndex.offset());
 
             Page page = pages.get(pageIndex);
             return page.getter().get(itemIndex.offset());
         }
 
-        private boolean isAppendingPage(int pageIndex) {
-            return appendingPage.file().getName().equals(pageIndex + PAGE_FILE_EXT);
-        }
     }
 
 
