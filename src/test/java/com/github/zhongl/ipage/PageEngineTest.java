@@ -83,7 +83,7 @@ public class PageEngineTest extends DirBase {
     @Test
     public void newItemIndexFileHashMapOnItOverFlow() throws Exception {
         dir = testDir("newItemIndexFileHashMapOnItOverFlow");
-//        engine = PageEngine.baseOn()
+        engine = PageEngine.baseOn(dir).initIndexBuckets(1).build();
     }
 
     @Test

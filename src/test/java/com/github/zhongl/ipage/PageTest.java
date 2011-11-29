@@ -1,6 +1,7 @@
 package com.github.zhongl.ipage;
 
 import com.google.common.io.Files;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class PageTest extends FileBase {
 
     @Test
     public void createPageAndAppendAndClose() throws Exception {
-        file = testFile("createPageAndAppendAndClose");
+        file = testFile("createAndAppendAndClose");
         assertThat(file.exists(), is(false));
         page = Page.openOn(file).createIfNotExist().build();
         assertAppendAndDurableBy(CLOSE);
@@ -45,7 +46,7 @@ public class PageTest extends FileBase {
     public void appendIfPageHasNotEnoughCapacity() throws Exception {
         file = testFile("appendWhilePageIsFull");
         page = Page.openOn(file).bytesCapacity(12).createIfNotExist().build();
-        page.appender().append(item("1234567890"));
+        page.append(item("1234567890"));
     }
 
     @Test
@@ -69,16 +70,16 @@ public class PageTest extends FileBase {
         // create a page and append one item
         page = Page.openOn(file).createIfNotExist().build();
         Item item1 = item("item1");
-        long offset1 = page.appender().append(item1);
+        long offset1 = page.append(item1);
         page.close();
 
         // open it and append again
         page = Page.openOn(file).build();
         Item item2 = item("item2");
-        long offset2 = page.appender().append(item2);
+        long offset2 = page.append(item2);
 
-        assertThat(page.getter().get(offset1), is(item1));
-        assertThat(page.getter().get(offset2), is(item2));
+        assertThat(page.get(offset1), is(item1));
+        assertThat(page.get(offset2), is(item2));
     }
 
     @Test
@@ -107,13 +108,19 @@ public class PageTest extends FileBase {
         page = Page.openOn(file).build();
     }
 
+    @Test
+    @Ignore("TODO")
+    public void iteratePage() throws Exception {
+        // TODO iteratePage
+    }
+
     private void assertAppendAndDurableBy(boolean close) throws IOException {
-        assertThat(page.appender().append(item("item1")), is(0L));
-        assertThat(page.appender().append(item("item2")), is(9L));
+        assertThat(page.append(item("item1")), is(0L));
+        assertThat(page.append(item("item2")), is(9L));
         if (close) {
             page.close();
         } else {
-            page.appender().flush();
+            page.flush();
         }
         assertPageContentOnDiskIs(DEFAULT_BYTES_CAPACITY, "item1".getBytes(), "item2".getBytes());
     }

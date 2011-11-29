@@ -8,6 +8,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Iterator;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.io.Files.*;
@@ -37,11 +38,11 @@ class Page implements Closeable {
         appender = new Appender();
     }
 
-    public Appender appender() {
+    private Appender appender() {
         return appender;
     }
 
-    public Getter getter() {
+    private Getter getter() {
         return getter;
     }
 
@@ -72,6 +73,22 @@ class Page implements Closeable {
 
     public File baseFile() {
         return file;
+    }
+
+    public long append(Item item) throws IOException {
+        return appender().append(item);
+    }
+
+    public Item get(long offset) throws IOException {
+        return getter().get(offset);
+    }
+
+    public void flush() throws IOException {
+        appender().flush();
+    }
+
+    public Iterator<Item> iterator() {
+        return null;  // TODO iterator
     }
 
     private abstract class Operator implements Closeable {

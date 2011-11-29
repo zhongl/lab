@@ -23,16 +23,18 @@ public class PageEngine extends Engine {
     private final Cache<Integer, Page> pages;
     private final File dir;
     private final long pageCapacity;
+    private int buckets;
 
     private Page appendingPage;
     private int appendingPageIndex = -1;
     private ItemIndexFileHashMap currentMap;
     private int currentMapIndex = -1;
 
-    public PageEngine(final File dir, long pageCapacity) throws IOException {
+    public PageEngine(final File dir, long pageCapacity, int initIndexBuckets) throws IOException {
         super(DEFAULT_TIMEOUT, DEFAULT_TIME_UNIT, DEFAULT_BACKLOG);
         this.dir = dir;
         this.pageCapacity = pageCapacity;
+        this.buckets = initIndexBuckets;
         this.pages = CacheBuilder.newBuilder()
                 .concurrencyLevel(1)
                 .expireAfterAccess(1, TimeUnit.MINUTES)
@@ -78,7 +80,8 @@ public class PageEngine extends Engine {
 
     private void openItemIndexFileHashMap() throws IOException {
         currentMapIndex++;
-        currentMap = new ItemIndexFileHashMap(new File(dir, currentMapIndex + INDEX_FILE_EXT), 4 * 1024 * 100); // TODO refactor init capacity
+        currentMap = new ItemIndexFileHashMap(new File(dir, currentMapIndex + INDEX_FILE_EXT), 4 * 1024 * buckets); // TODO refactor init capacity
+        buckets = buckets * 2;
     }
 
     private void openAppendingPage() throws IOException {
@@ -107,6 +110,7 @@ public class PageEngine extends Engine {
 
         private final File dir;
         private long pageCapacity = Page.Builder.DEFAULT_BYTES_CAPACITY;
+        private int initIndexBuckets = 100;
 
         public Builder(File dir) {
             this.dir = dir;
@@ -117,8 +121,14 @@ public class PageEngine extends Engine {
             return this;
         }
 
+        public Builder initIndexBuckets(int value) {
+            // TODO validate value
+            initIndexBuckets = value;
+            return this;
+        }
+
         public PageEngine build() throws IOException {
-            return new PageEngine(dir, pageCapacity);
+            return new PageEngine(dir, pageCapacity, initIndexBuckets);
         }
     }
 
@@ -159,7 +169,7 @@ public class PageEngine extends Engine {
 
         private long doAppend() throws IOException {
             try {
-                return appendingPage.appender().append(item);
+                return appendingPage.append(item);
             } catch (OverflowException e) {
                 openAppendingPage();
                 return doAppend();
@@ -180,10 +190,10 @@ public class PageEngine extends Engine {
             ItemIndex itemIndex = currentMap.get(key);
             int pageIndex = itemIndex.pageIndex();
 
-            if (appendingPageIndex == pageIndex) return appendingPage.getter().get(itemIndex.offset());
+            if (appendingPageIndex == pageIndex) return appendingPage.get(itemIndex.offset());
 
             Page page = pages.get(pageIndex);
-            return page.getter().get(itemIndex.offset());
+            return page.get(itemIndex.offset());
         }
 
     }

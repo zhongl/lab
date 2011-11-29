@@ -1,7 +1,5 @@
 package com.github.zhongl.ipage;
 
-import com.google.common.base.Throwables;
-
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.Closeable;
 import java.io.File;
@@ -21,28 +19,21 @@ import java.nio.channels.FileChannel;
 @NotThreadSafe
 public final class ItemIndexFileHashMap implements Closeable, ItemIndexMap {
 
-    private final File file;
-
     private final RandomAccessFile randomAccessFile;
     private final MappedByteBuffer mappedByteBuffer;
     private final Bucket[] buckets;
 
     public ItemIndexFileHashMap(File file, int initCapacity) throws IOException {
-        this.file = file;
-        randomAccessFile = new RandomAccessFile(file, "rws");
+        randomAccessFile = new RandomAccessFile(file, "rw");
         randomAccessFile.setLength(initCapacity);
         mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0L, initCapacity);
         buckets = createBuckets(initCapacity / Bucket.LENGTH);
     }
 
-    public File basefile() {
-        return file;
-    }
 
     @Override
     public ItemIndex put(Md5Key key, ItemIndex itemIndex) {
         ItemIndex previous = buckets[hashAndMode(key)].put(key, itemIndex);
-        fsync();
         return previous;
     }
 
@@ -54,14 +45,16 @@ public final class ItemIndexFileHashMap implements Closeable, ItemIndexMap {
     @Override
     public ItemIndex remove(Md5Key key) {
         ItemIndex exit = buckets[hashAndMode(key)].remove(key);
-        fsync();
         return exit;
     }
 
     @Override
     public void close() throws IOException {
-        DirectByteBufferCleaner.clean(mappedByteBuffer);
-        randomAccessFile.close();
+        if (randomAccessFile.getChannel().isOpen()) {
+            flush();
+            DirectByteBufferCleaner.clean(mappedByteBuffer);
+            randomAccessFile.close();
+        }
     }
 
     private int hashAndMode(Md5Key key) {
@@ -76,12 +69,8 @@ public final class ItemIndexFileHashMap implements Closeable, ItemIndexMap {
         return buckets;
     }
 
-    private void fsync() {
-        try {
-            randomAccessFile.getChannel().force(false);
-        } catch (IOException e) {
-            Throwables.propagate(e);
-        }
+    public void flush() {
+        mappedByteBuffer.force();
     }
 
     private static ByteBuffer slice(ByteBuffer buffer, int offset, int length) {
