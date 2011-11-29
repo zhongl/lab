@@ -1,13 +1,15 @@
 package com.github.zhongl.ipage;
 
+import com.google.common.io.Files;
+
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
+
+import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 
 /**
  * {@link com.github.zhongl.ipage.RecordIndex} is a dir-based hash map for mapping
@@ -22,14 +24,11 @@ import java.nio.channels.FileChannel;
 public final class RecordIndex implements Closeable {
 
     private static final Long NULL_OFFSET = null;
-    private final RandomAccessFile randomAccessFile;
     private final MappedByteBuffer mappedByteBuffer;
     private final Bucket[] buckets;
 
     public RecordIndex(File file, int initCapacity) throws IOException {
-        randomAccessFile = new RandomAccessFile(file, "rw");
-        randomAccessFile.setLength(initCapacity);
-        mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0L, initCapacity);
+        mappedByteBuffer = Files.map(file, READ_WRITE, initCapacity);
         buckets = createBuckets(initCapacity / Bucket.LENGTH);
     }
 
@@ -47,11 +46,8 @@ public final class RecordIndex implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (randomAccessFile.getChannel().isOpen()) {
-            flush();
-            DirectByteBufferCleaner.clean(mappedByteBuffer);
-            randomAccessFile.close();
-        }
+        flush();
+        DirectByteBufferCleaner.clean(mappedByteBuffer);
     }
 
     private int hashAndMode(Md5Key key) {

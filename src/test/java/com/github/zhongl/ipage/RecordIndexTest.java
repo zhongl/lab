@@ -31,6 +31,11 @@ public class RecordIndexTest extends FileBase {
         long offset = 7L;
         assertThat(map.put(key, offset), is(nullValue()));
         assertThat(map.get(key), is(offset));
+
+        map.close();
+
+        map = newRecordIndexWithBuckets(1);
+        assertThat(map.get(key), is(offset)); // assert sync to file
     }
 
     @Test
