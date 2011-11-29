@@ -23,7 +23,7 @@ import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 @NotThreadSafe
-class Chunk implements Closeable {
+final class Chunk implements Closeable {
 
     private final File file;
     private final long capacity;

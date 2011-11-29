@@ -12,45 +12,53 @@ import java.nio.MappedByteBuffer;
 import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 
 /**
- * {@link com.github.zhongl.ipage.RecordIndex} is a dir-based hash map for mapping
- * {@link com.github.zhongl.ipage.Md5Key} and offset of {@link com.github.zhongl.ipage.Record} in
- * {@link com.github.zhongl.ipage.IPage}.
+ * {@link Buckets} is a file-based hash map for mapping
+ * {@link Md5Key} and offset of {@link Record} in
+ * {@link IPage}.
  * <p/>
  * It is a implemente of separate chain hash table, more infomation you can find in "Data Structures & Algorithms In Java".
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 @NotThreadSafe
-public final class RecordIndex implements Closeable {
+final class Buckets implements Closeable {
 
-    private static final Long NULL_OFFSET = null;
+    static final Long NULL_OFFSET = null;
+    static final int DEFAULT_SIZE = 256;
     private final MappedByteBuffer mappedByteBuffer;
     private final Bucket[] buckets;
+    private final File file;
 
-    public RecordIndex(File file, int initCapacity) throws IOException {
-        mappedByteBuffer = Files.map(file, READ_WRITE, initCapacity);
-        buckets = createBuckets(initCapacity / Bucket.LENGTH);
+    public Buckets(File file, int size) throws IOException {
+        this.file = file;
+        size = size > 0 ? size : DEFAULT_SIZE;
+        mappedByteBuffer = Files.map(file, READ_WRITE, size * Bucket.LENGTH);
+        buckets = createBuckets(size);
+    }
+
+    public int size() {
+        return buckets.length;
     }
 
     public Long put(Md5Key key, Long offset) {
-        return buckets[hashAndMode(key)].put(key, offset);
+        return buckets[hashAndMod(key)].put(key, offset);
     }
 
     public Long get(Md5Key key) {
-        return buckets[hashAndMode(key)].get(key);
+        return buckets[hashAndMod(key)].get(key);
     }
 
     public Long remove(Md5Key key) {
-        return buckets[hashAndMode(key)].remove(key);
+        return buckets[hashAndMod(key)].remove(key);
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException { // TODO remve Closeable because of IOException
         flush();
         DirectByteBufferCleaner.clean(mappedByteBuffer);
     }
 
-    private int hashAndMode(Md5Key key) {
+    private int hashAndMod(Md5Key key) {
         return Math.abs(key.hashCode()) % buckets.length;
     }
 
@@ -72,17 +80,25 @@ public final class RecordIndex implements Closeable {
         return buffer.slice();
     }
 
+    public int no() {
+        return Integer.parseInt(file.getName());
+    }
+
+    public void cleanupIfAllKeyRemoved() {
+        // TODO cleanupIfAllKeyRemoved
+    }
+
     /**
-     * {@link com.github.zhongl.ipage.RecordIndex.Bucket} has 163
-     * {@link com.github.zhongl.ipage.RecordIndex.Bucket.Slot} for storing tuple of
-     * {@link com.github.zhongl.ipage.Md5Key} and offset of {@link com.github.zhongl.ipage.Record} in
-     * {@link com.github.zhongl.ipage.IPage}.
+     * {@link Buckets.Bucket} has 163
+     * {@link Buckets.Bucket.Slot} for storing tuple of
+     * {@link Md5Key} and offset of {@link Record} in
+     * {@link IPage}.
      * <p/>
      * Every slot has a head byte to indicate it is empty, occupied or released.
      */
     private static class Bucket {
 
-        public static final int LENGTH = 4096; // 4K
+        public static final int LENGTH = Integer.getInteger("ipage.bucket.length", 4096); // default 4K
         private final Slot[] slots;
 
         public Bucket(ByteBuffer buffer) {
@@ -112,7 +128,7 @@ public final class RecordIndex implements Closeable {
                 }
                 // continue to check rest slots whether contain the key.
             }
-            if (firstReleased < 0) throw new OverflowException("No slot for new item index.");
+            if (firstReleased < 0) throw new OverflowException();
             Long previous = slots[firstReleased].add(key, offset);
             updateDigest();
             return previous;
@@ -143,9 +159,9 @@ public final class RecordIndex implements Closeable {
         }
 
         /**
-         * {@link com.github.zhongl.ipage.RecordIndex.Bucket.Slot} =
-         * {@link com.github.zhongl.ipage.RecordIndex.Bucket.Slot.State}
-         * {@link com.github.zhongl.ipage.Md5Key}
+         * {@link Buckets.Bucket.Slot} =
+         * {@link Buckets.Bucket.Slot.State}
+         * {@link Md5Key}
          * {@link Long}
          */
         private static class Slot {

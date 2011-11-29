@@ -3,10 +3,8 @@ package com.github.zhongl.ipage;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -17,7 +15,7 @@ public class IPage implements Closeable, Iterable<Record> {
 
     private final File baseDir;
     private final int chunkCapcity;
-    private final List<Chunk> chunks;
+    private final List<Chunk> chunks; // TODO use LRU to cache chunks
     private final AbstractList<Range> chunkOffsetRangeList;
 
     public static Builder baseOn(File dir) {
@@ -33,20 +31,25 @@ public class IPage implements Closeable, Iterable<Record> {
 
     public long append(Record record) throws IOException {
         try {
-            return appendingChunk().append(record);
+            releaseChunkIfNecessary();
+            return lastRecentlyUsedChunk().append(record);
         } catch (OverflowException e) {
-            newChunk();
+            grow();
             return append(record);
         }
     }
 
-    private Chunk appendingChunk() throws IOException {
-        if (chunks.isEmpty()) return newChunk();
+    private void releaseChunkIfNecessary() {
+        // TODO releaseChunkIfNecessary
+    }
+
+    private Chunk lastRecentlyUsedChunk() throws IOException {
+        if (chunks.isEmpty()) return grow();
         return chunks.get(0);
     }
 
-    private Chunk newChunk() throws IOException {
-        long beginPositionInIPage = chunks.isEmpty() ? 0L : appendingChunk().endPositionInIPage() + 1;
+    private Chunk grow() throws IOException {
+        long beginPositionInIPage = chunks.isEmpty() ? 0L : lastRecentlyUsedChunk().endPositionInIPage() + 1;
         Chunk chunk = new Chunk(beginPositionInIPage, new File(baseDir, beginPositionInIPage + ""), chunkCapcity);
         chunks.add(0, chunk);
         return chunk;
@@ -54,6 +57,7 @@ public class IPage implements Closeable, Iterable<Record> {
 
     public Record get(long offset) throws IOException {
         if (chunks.isEmpty()) return null;
+        releaseChunkIfNecessary();
         return chunkIn(offset).get(offset);
     }
 
@@ -63,12 +67,13 @@ public class IPage implements Closeable, Iterable<Record> {
     }
 
     public void flush() throws IOException {
-        appendingChunk().flush();
+        lastRecentlyUsedChunk().flush();
+        releaseChunkIfNecessary();
     }
 
     @Override
     public void close() throws IOException {
-        appendingChunk().close();
+        lastRecentlyUsedChunk().close();
     }
 
     @Override
@@ -92,11 +97,22 @@ public class IPage implements Closeable, Iterable<Record> {
         chunks.add(toTruncateChunk.truncate(offset));
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("IPage");
+        sb.append("{baseDir=").append(baseDir);
+        sb.append(", chunkCapcity=").append(chunkCapcity);
+        sb.append(", chunks=").append(chunks);
+        sb.append('}');
+        return sb.toString();
+    }
+
     public static final class Builder {
 
         private static final int MIN_CHUNK_CAPACITY = 4096;
         private static final int UNSET = -1;
-        private static final Pattern CHUNK_NAME_PATTERN = Pattern.compile("[0-9]+");
+
         private final File baseDir;
         private int chunkCapcity = UNSET;
 
@@ -114,38 +130,24 @@ public class IPage implements Closeable, Iterable<Record> {
         }
 
         public IPage build() throws IOException {
-            chunkCapcity = chunkCapcity == UNSET ? MIN_CHUNK_CAPACITY : chunkCapcity;
-            List<Chunk> chunks = validateAndLoadChunks();
+            chunkCapcity = (chunkCapcity == UNSET) ? MIN_CHUNK_CAPACITY : chunkCapcity;
+            List<Chunk> chunks = validateAndLoadExistChunks();
             return new IPage(baseDir, chunkCapcity, chunks);
         }
 
-        private List<Chunk> validateAndLoadChunks() throws IOException {
-            String[] fileNames = baseDir.list(new ChunkFilter());
-            Arrays.sort(fileNames, new ChunkNameComparator());
+        private List<Chunk> validateAndLoadExistChunks() throws IOException {
+            File[] files = baseDir.listFiles(new NumberFileNameFilter());
+            Arrays.sort(files, new FileNumberNameComparator());
 
-            ArrayList<Chunk> chunks = new ArrayList<Chunk>(fileNames.length);
-            for (String fileName : fileNames) {
+            ArrayList<Chunk> chunks = new ArrayList<Chunk>(files.length);
+            for (File file : files) {
                 // TODO validate chunks
-                Chunk chunk = new Chunk(Long.parseLong(fileName), new File(baseDir, fileName), chunkCapcity);
+                Chunk chunk = new Chunk(Long.parseLong(file.getName()), file, chunkCapcity);
                 chunks.add(0, chunk); // reverse order to make sure the appending chunk at first.
             }
             return chunks;
         }
 
-        private static class ChunkFilter implements FilenameFilter {
-            @Override
-            public boolean accept(File dir, String name) {
-                return CHUNK_NAME_PATTERN.matcher(name).matches();
-            }
-        }
-
-        private static class ChunkNameComparator implements Comparator<String> {
-            @Override
-            public int compare(String name1, String name2) {
-                return (int) (Long.parseLong(name1) - Long.parseLong(name2));
-            }
-
-        }
     }
 
     private class ChunkOfferRangeList extends AbstractList<Range> {

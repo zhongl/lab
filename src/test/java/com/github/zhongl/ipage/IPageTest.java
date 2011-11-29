@@ -63,8 +63,8 @@ public class IPageTest extends DirBase {
         for (int i = 0; i < 257; i++) {
             page.append(record);
         }
-        assertThat(new File(dir, "0").exists(), is(true));
-        assertThat(new File(dir, "4096").exists(), is(true)); // assert second chunk exist
+        assertExistFile("0");
+        assertExistFile("4096");
 
         assertThat(page.get(0L), is(record));
         assertThat(page.get(4080L), is(record));
@@ -81,16 +81,16 @@ public class IPageTest extends DirBase {
             page.append(record);
         }
 
-        assertThat(new File(dir, "0").exists(), is(true));
-        assertThat(new File(dir, "4096").exists(), is(true));
-        assertThat(new File(dir, "8192").exists(), is(true));
+        assertExistFile("0");
+        assertExistFile("4096");
+        assertExistFile("8192");
 
         page.truncate(4112L);
 
-        assertThat(new File(dir, "0").exists(), is(false));
-        assertThat(new File(dir, "4096").exists(), is(false));
-        assertThat(new File(dir, "4112").exists(), is(true)); // assert new chunk
-        assertThat(new File(dir, "8192").exists(), is(true));
+        assertNotExistFile("0");
+        assertNotExistFile("4096");
+        assertExistFile("4112");
+        assertExistFile("8192");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -117,8 +117,8 @@ public class IPageTest extends DirBase {
         }
         page.close();
 
-        assertThat(new File(dir, "0").exists(), is(true));
-        assertThat(new File(dir, "4096").exists(), is(true));
+        assertExistFile("0");
+        assertExistFile("4096");
 
         // load and verify
         page = IPage.baseOn(dir).build();

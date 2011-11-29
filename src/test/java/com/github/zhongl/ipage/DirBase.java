@@ -6,6 +6,9 @@ import org.junit.Before;
 import java.io.File;
 import java.io.IOException;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
 public abstract class DirBase {
     private static final String BASE_ROOT = "target/tmpTestFiles/";
@@ -29,4 +32,8 @@ public abstract class DirBase {
         if (file.exists()) delete(file);
         return file;
     }
+
+    protected void assertNotExistFile(String name) {assertThat(new File(dir, name).exists(), is(false));}
+
+    protected void assertExistFile(String name) {assertThat(new File(dir, name).exists(), is(true));}
 }

@@ -3,12 +3,10 @@ package com.github.zhongl.ipage;
 import org.junit.After;
 import org.junit.Test;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 
 import static com.github.zhongl.ipage.RecordTest.item;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
 public class PageEngineTest extends DirBase {
@@ -75,9 +73,9 @@ public class PageEngineTest extends DirBase {
 
         callback.awaitForDone();
 
-        assertThat(new File(dir, 0 + PageEngine.PAGE_FILE_EXT).exists(), is(true));
-        assertThat(new File(dir, 1 + PageEngine.PAGE_FILE_EXT).exists(), is(true));
-        assertThat(new File(dir, 2 + PageEngine.PAGE_FILE_EXT).exists(), is(true));
+        assertExistFile(0 + PageEngine.PAGE_FILE_EXT);
+        assertExistFile(1 + PageEngine.PAGE_FILE_EXT);
+        assertExistFile(2 + PageEngine.PAGE_FILE_EXT);
     }
 
     @Test
