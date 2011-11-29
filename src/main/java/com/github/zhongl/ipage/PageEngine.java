@@ -90,8 +90,8 @@ public class PageEngine extends Engine {
                 ItemIndex itemIndex = new ItemIndex(0, appendingPage.appender().append(item));
                 currentMap.put(key, itemIndex);
                 callback.onSuccess(key);
-            } catch (IOException e) {
-                callback.onFailure(e);
+            } catch (Throwable t) {
+                callback.onFailure(t);
             }
         }
     }
@@ -111,8 +111,8 @@ public class PageEngine extends Engine {
                 ItemIndex itemIndex = currentMap.get(key);
                 Page page = pages.get(itemIndex.pageIndex());
                 callback.onSuccess(page.getter().get(itemIndex.offset()));
-            } catch (IOException e) {
-                callback.onFailure(e);
+            } catch (Throwable t) {
+                callback.onFailure(t);
             }
         }
     }
