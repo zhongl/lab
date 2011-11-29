@@ -73,47 +73,39 @@ public class PageEngine extends Engine {
         return submit(new Get(itemIndex, callback));
     }
 
-    private class Append implements Runnable {
+    private class Append extends Task<Md5Key> {
 
         private final Item item;
-        private final FutureCallback<Md5Key> callback;
 
         public Append(Item item, FutureCallback<Md5Key> callback) {
+            super(callback);
             this.item = item;
-            this.callback = callback;
         }
 
         @Override
-        public void run() {
-            try {
-                Md5Key key = item.md5Key();
-                ItemIndex itemIndex = new ItemIndex(0, appendingPage.appender().append(item));
-                currentMap.put(key, itemIndex);
-                callback.onSuccess(key);
-            } catch (Throwable t) {
-                callback.onFailure(t);
-            }
+        protected Md5Key execute() throws IOException {
+            Md5Key key = item.md5Key();
+            ItemIndex itemIndex = new ItemIndex(0, appendingPage.appender().append(item));
+            currentMap.put(key, itemIndex);
+            return key;
         }
     }
 
-    private class Get implements Runnable {
+    private class Get extends Task<Item> {
         private final Md5Key key;
-        private final FutureCallback<Item> callback;
 
         public Get(Md5Key key, FutureCallback<Item> callback) {
+            super(callback);
             this.key = key;
-            this.callback = callback;
         }
 
         @Override
-        public void run() {
-            try {
-                ItemIndex itemIndex = currentMap.get(key);
-                Page page = pages.get(itemIndex.pageIndex());
-                callback.onSuccess(page.getter().get(itemIndex.offset()));
-            } catch (Throwable t) {
-                callback.onFailure(t);
-            }
+        protected Item execute() throws Throwable {
+            ItemIndex itemIndex = currentMap.get(key);
+            Page page = pages.get(itemIndex.pageIndex());
+            return page.getter().get(itemIndex.offset());
         }
     }
+
+
 }

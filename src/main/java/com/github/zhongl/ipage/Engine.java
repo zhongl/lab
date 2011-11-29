@@ -1,6 +1,7 @@
 package com.github.zhongl.ipage;
 
 import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.FutureCallback;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.BlockingQueue;
@@ -76,5 +77,24 @@ public abstract class Engine {
     private static class Shutdown implements Runnable {
         @Override
         public void run() { }
+    }
+
+    /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
+    protected abstract static class Task<T> implements Runnable {
+        protected final FutureCallback<T> callback;
+
+        public Task(FutureCallback<T> callback) {this.callback = callback;}
+
+        @Override
+        public final void run() {
+            try {
+                T result = execute();
+                callback.onSuccess(result);
+            } catch (Throwable t) {
+                callback.onFailure(t);
+            }
+        }
+
+        protected abstract T execute() throws Throwable;
     }
 }
