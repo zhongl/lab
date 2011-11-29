@@ -5,6 +5,9 @@ import org.hamcrest.Matcher;
 
 import java.util.concurrent.CountDownLatch;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
 class AssertFutureCallback<T> implements FutureCallback<T> {
 
@@ -33,5 +36,9 @@ class AssertFutureCallback<T> implements FutureCallback<T> {
         }
         if (t != null) throw new AssertionError(t);
         matcher.matches(result);
+    }
+
+    public void awaitForDone() {
+        assertResult((Matcher<T>) is(notNullValue()));
     }
 }

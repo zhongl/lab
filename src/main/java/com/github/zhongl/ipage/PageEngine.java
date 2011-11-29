@@ -14,21 +14,24 @@ import java.util.concurrent.TimeUnit;
 @ThreadSafe
 public class PageEngine extends Engine {
 
-    private static final String PAGE_FILE_EXT = ".page";
-    private static final String INDEX_FILE_EXT = ".index";
-    private static final int DEFAULT_BACKLOG = 10;
-    private static final long DEFAULT_TIMEOUT = 500;
-    private static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
+    static final String PAGE_FILE_EXT = ".page";
+    static final String INDEX_FILE_EXT = ".index";
+    static final int DEFAULT_BACKLOG = 10;
+    static final long DEFAULT_TIMEOUT = 500;
+    static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
 
     private final Cache<Integer, Page> pages;
     private final File dir;
+    private final long pageCapacity;
 
     private Page appendingPage;
     private ItemIndexFileHashMap currentMap;
+    private int appendingPageIndex = 0;
 
-    public PageEngine(final File dir) throws IOException {
+    public PageEngine(final File dir, long pageCapacity) throws IOException {
         super(DEFAULT_TIMEOUT, DEFAULT_TIME_UNIT, DEFAULT_BACKLOG);
         this.dir = dir;
+        this.pageCapacity = pageCapacity;
         this.pages = CacheBuilder.newBuilder()
                 .concurrencyLevel(1)
                 .expireAfterAccess(1, TimeUnit.MINUTES)
@@ -62,10 +65,11 @@ public class PageEngine extends Engine {
     }
 
     private void newAppendingPage() throws IOException {
-        Page page = Page.openOn(new File(dir, pages.size() + PAGE_FILE_EXT))
+        this.appendingPage = Page.openOn(new File(dir, appendingPageIndex + PAGE_FILE_EXT))
                 .createIfNotExist()
+                .bytesCapacity(pageCapacity)
                 .build();
-        this.appendingPage = page;
+        appendingPageIndex++;
     }
 
     // TODO @Count monitor
@@ -76,6 +80,29 @@ public class PageEngine extends Engine {
 
     public boolean get(Md5Key itemIndex, FutureCallback<Item> callback) {
         return submit(new Get(itemIndex, callback));
+    }
+
+    public static Builder baseOn(File dir) {
+        return new Builder(dir);
+    }
+
+    public static class Builder {
+
+        private final File dir;
+        private long pageCapacity = Page.Builder.DEFAULT_BYTES_CAPACITY;
+
+        public Builder(File dir) {
+            this.dir = dir;
+        }
+
+        public Builder pageCapacity(long value) {
+            pageCapacity = value;
+            return this;
+        }
+
+        public PageEngine build() throws IOException {
+            return new PageEngine(dir, pageCapacity);
+        }
     }
 
     private static class ClosePageOnRemoval implements RemovalListener<Object, Object> {
@@ -109,9 +136,17 @@ public class PageEngine extends Engine {
         @Override
         protected Md5Key execute() throws IOException {
             Md5Key key = item.md5Key();
-            ItemIndex itemIndex = new ItemIndex(0, appendingPage.appender().append(item));
-            currentMap.put(key, itemIndex);
+            currentMap.put(key, new ItemIndex(appendingPageIndex, doAppend()));
             return key;
+        }
+
+        private long doAppend() throws IOException {
+            try {
+                return appendingPage.appender().append(item);
+            } catch (OverflowException e) {
+                newAppendingPage();
+                return doAppend();
+            }
         }
     }
 
