@@ -105,7 +105,7 @@ class Chunk implements Closeable {
     }
 
     public Chunk truncate(long offset) throws IOException {
-        long length = file.length() - offset;
+        long length = endPositionInIPage() - offset;
         File remains = new File(file.getParentFile(), offset + "");
         InputSupplier<InputStream> source = ByteStreams.slice(Files.newInputStreamSupplier(file), offset, length);
         Files.copy(source, remains);
