@@ -50,7 +50,7 @@ public abstract class Engine {
         return core.isAlive();
     }
 
-    protected final boolean submit(Runnable task) {
+    protected final boolean submit(Task<?> task) {
         return tasks.offer(task);
     }
 
