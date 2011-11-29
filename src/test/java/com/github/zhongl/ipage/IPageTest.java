@@ -67,12 +67,6 @@ public class IPageTest extends DirBase {
     }
 
     @Test
-    @Ignore("TODO")
-    public void removeByOffset() throws Exception {
-        // TODO removeByOffset
-    }
-
-    @Test
     public void getFromNonAppendingChunk() throws Exception {
         dir = testDir("getFromNonAppendingChunk");
         page = IPage.baseOn(dir).chunkCapacity(4096).build();
@@ -86,6 +80,23 @@ public class IPageTest extends DirBase {
         assertThat(page.get(0L), is(item));
         assertThat(page.get(4080L), is(item));
         assertThat(page.get(4096L), is(item));
+    }
+
+    @Test
+    public void truncateByOffset() throws Exception {
+        dir = testDir("truncateByOffset");
+        page = IPage.baseOn(dir).chunkCapacity(4096).build();
+
+        Item item = item("0123456789ab");
+        for (int i = 0; i < 257; i++) {
+            page.append(item);
+        }
+
+        page.truncate(4080L);
+
+        assertThat(new File(dir, "0").exists(), is(false));
+        assertThat(new File(dir, "4080").exists(), is(true));
+        assertThat(new File(dir, "4096").exists(), is(true)); // assert second chunk exist
     }
 
 

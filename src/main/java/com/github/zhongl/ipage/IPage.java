@@ -76,6 +76,22 @@ public class IPage implements Closeable, Iterable<Item> {
         return null;  // TODO iterator
     }
 
+    /**
+     * Remove {@link com.github.zhongl.ipage.Item} before the offset.
+     *
+     * @param offset
+     */
+    public void truncate(long offset) throws IOException {
+        int index = Range.binarySearch(chunkOffsetRangeList, offset);
+        Chunk toTruncateChunk = chunks.get(index);
+        List<Chunk> toRmoved = chunks.subList(index + 1, chunks.size());
+        for (Chunk chunk : toRmoved) {
+            chunk.erase();
+        }
+        toRmoved.clear();
+        chunks.add(toTruncateChunk.truncate(offset));
+    }
+
     public static final class Builder {
 
         private static final int MIN_CHUNK_CAPACITY = 4096;

@@ -1,15 +1,15 @@
 package com.github.zhongl.ipage;
 
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import com.google.common.io.InputSupplier;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.util.Iterator;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 
 /**
@@ -97,6 +97,20 @@ class Chunk implements Closeable {
 
     public Iterator<Item> iterator() {
         return null;  // TODO iterator
+    }
+
+    public void erase() throws IOException {
+        close();
+        checkState(file.delete(), "Can't delete file %s ", file);
+    }
+
+    public Chunk truncate(long offset) throws IOException {
+        long length = file.length() - offset;
+        File remains = new File(file.getParentFile(), offset + "");
+        InputSupplier<InputStream> source = ByteStreams.slice(Files.newInputStreamSupplier(file), offset, length);
+        Files.copy(source, remains);
+        erase();
+        return new Chunk(offset, remains, length);
     }
 
     private void checkOverFlowIfAppend(int length) {
