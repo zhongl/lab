@@ -19,7 +19,7 @@ import java.nio.channels.FileChannel;
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 @NotThreadSafe
-public final class ItemIndexFileHashMap implements Closeable {
+public final class ItemIndexFileHashMap implements Closeable, ItemIndexMap {
 
     private final File file;
 
@@ -31,7 +31,7 @@ public final class ItemIndexFileHashMap implements Closeable {
         this.file = file;
         randomAccessFile = new RandomAccessFile(file, "rws");
         randomAccessFile.setLength(initCapacity);
-        mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.PRIVATE, 0L, initCapacity);
+        mappedByteBuffer = randomAccessFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0L, initCapacity);
         buckets = createBuckets(initCapacity / Bucket.LENGTH);
     }
 
@@ -39,16 +39,19 @@ public final class ItemIndexFileHashMap implements Closeable {
         return file;
     }
 
+    @Override
     public ItemIndex put(Md5Key key, ItemIndex itemIndex) {
         ItemIndex previous = buckets[hashAndMode(key)].put(key, itemIndex);
         fsync();
         return previous;
     }
 
+    @Override
     public ItemIndex get(Md5Key key) {
         return buckets[hashAndMode(key)].get(key);
     }
 
+    @Override
     public ItemIndex remove(Md5Key key) {
         ItemIndex exit = buckets[hashAndMode(key)].remove(key);
         fsync();
