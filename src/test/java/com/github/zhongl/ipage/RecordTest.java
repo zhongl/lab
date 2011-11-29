@@ -6,15 +6,15 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
-public class ItemTest {
+public class RecordTest {
 
-    static Item item(String str) {
-        return new Item(str.getBytes());
+    static Record item(String str) {
+        return new Record(str.getBytes());
     }
 
     @Test
     public void itemToString() throws Exception {
-        assertThat(new Item("item".getBytes()).toString(), is("Item{bytes=[105, 116, 101, 109]}"));
+        assertThat(new Record("item".getBytes()).toString(), is("Record{bytes=[105, 116, 101, 109]}"));
     }
 
 }

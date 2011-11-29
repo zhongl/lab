@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
-import static com.github.zhongl.ipage.ItemTest.item;
 import static com.github.zhongl.ipage.Page.Builder.DEFAULT_BYTES_CAPACITY;
+import static com.github.zhongl.ipage.RecordTest.item;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -69,17 +69,17 @@ public class PageTest extends FileBase {
 
         // create a page and append one item
         page = Page.openOn(file).createIfNotExist().build();
-        Item item1 = item("item1");
-        long offset1 = page.append(item1);
+        Record record1 = item("record1");
+        long offset1 = page.append(record1);
         page.close();
 
         // open it and append again
         page = Page.openOn(file).build();
-        Item item2 = item("item2");
-        long offset2 = page.append(item2);
+        Record record2 = item("record2");
+        long offset2 = page.append(record2);
 
-        assertThat(page.get(offset1), is(item1));
-        assertThat(page.get(offset2), is(item2));
+        assertThat(page.get(offset1), is(record1));
+        assertThat(page.get(offset2), is(record2));
     }
 
     @Test

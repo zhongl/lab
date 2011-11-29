@@ -16,8 +16,8 @@ import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
  * {@link com.github.zhongl.ipage.Chunk} File structure :
  * <ul>
  * <p/>
- * <li>{@link com.github.zhongl.ipage.Chunk} = {@link com.github.zhongl.ipage.Item}* </li>
- * <li>{@link com.github.zhongl.ipage.Item} = length:4bytes bytes</li>
+ * <li>{@link com.github.zhongl.ipage.Chunk} = {@link Record}* </li>
+ * <li>{@link Record} = length:4bytes bytes</li>
  * </ul>
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
@@ -46,19 +46,19 @@ class Chunk implements Closeable {
         this.writePosition = (int) file.length();
     }
 
-    public long append(Item item) throws IOException {
-        checkOverFlowIfAppend(item.length());
+    public long append(Record record) throws IOException {
+        checkOverFlowIfAppend(record.length());
         long iPageOffset = writePosition + beginPositionInIPage;
         ensureMap();
         mappedByteBuffer.position(writePosition);
-        writePosition += item.writeTo(mappedByteBuffer.duplicate());
+        writePosition += record.writeTo(mappedByteBuffer.duplicate());
         return iPageOffset;
     }
 
-    public Item get(long offset) throws IOException {
+    public Record get(long offset) throws IOException {
         ensureMap();
         mappedByteBuffer.position((int) (offset - beginPositionInIPage));
-        return Item.readFrom(mappedByteBuffer.duplicate()); // duplicate to avoid modification of mappedDirectBuffer .
+        return Record.readFrom(mappedByteBuffer.duplicate()); // duplicate to avoid modification of mappedDirectBuffer .
     }
 
     @Override
@@ -95,7 +95,7 @@ class Chunk implements Closeable {
         mappedByteBuffer.force();
     }
 
-    public Iterator<Item> iterator() {
+    public Iterator<Record> iterator() {
         return null;  // TODO iterator
     }
 
@@ -114,7 +114,7 @@ class Chunk implements Closeable {
     }
 
     private void checkOverFlowIfAppend(int length) {
-        int appendedPosition = writePosition + length + Item.LENGTH_BYTES;
+        int appendedPosition = writePosition + length + Record.LENGTH_BYTES;
         if (appendedPosition > capacity) throw new OverflowException();
     }
 

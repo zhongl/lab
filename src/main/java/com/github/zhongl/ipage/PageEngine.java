@@ -94,11 +94,11 @@ public class PageEngine extends Engine {
 
     // TODO @Count monitor
     // TODO @Elapse monitor
-    public boolean append(Item item, FutureCallback<Md5Key> callback) {
-        return submit(new Append(item, callback));
+    public boolean append(Record record, FutureCallback<Md5Key> callback) {
+        return submit(new Append(record, callback));
     }
 
-    public boolean get(Md5Key itemIndex, FutureCallback<Item> callback) {
+    public boolean get(Md5Key itemIndex, FutureCallback<Record> callback) {
         return submit(new Get(itemIndex, callback));
     }
 
@@ -153,23 +153,23 @@ public class PageEngine extends Engine {
 
     private class Append extends Task<Md5Key> {
 
-        private final Item item;
+        private final Record record;
 
-        public Append(Item item, FutureCallback<Md5Key> callback) {
+        public Append(Record record, FutureCallback<Md5Key> callback) {
             super(callback);
-            this.item = item;
+            this.record = record;
         }
 
         @Override
         protected Md5Key execute() throws IOException {
-            Md5Key key = item.md5Key();
+            Md5Key key = record.md5Key();
             currentMap.put(key, new ItemIndex(appendingPageIndex, doAppend()));
             return key;
         }
 
         private long doAppend() throws IOException {
             try {
-                return appendingPage.append(item);
+                return appendingPage.append(record);
             } catch (OverflowException e) {
                 openAppendingPage();
                 return doAppend();
@@ -177,16 +177,16 @@ public class PageEngine extends Engine {
         }
     }
 
-    private class Get extends Task<Item> {
+    private class Get extends Task<Record> {
         private final Md5Key key;
 
-        public Get(Md5Key key, FutureCallback<Item> callback) {
+        public Get(Md5Key key, FutureCallback<Record> callback) {
             super(callback);
             this.key = key;
         }
 
         @Override
-        protected Item execute() throws Throwable {
+        protected Record execute() throws Throwable {
             ItemIndex itemIndex = currentMap.get(key);
             int pageIndex = itemIndex.pageIndex();
 

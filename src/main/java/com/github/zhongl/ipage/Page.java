@@ -17,8 +17,8 @@ import static com.google.common.io.Files.*;
  * {@link Page} File structure :
  * <ul>
  * <p/>
- * <li>{@link Page} = bytesCapacity:4bytes {@link Item}* </li>
- * <li>{@link Item} = length:4bytes bytes</li>
+ * <li>{@link Page} = bytesCapacity:4bytes {@link Record}* </li>
+ * <li>{@link Record} = length:4bytes bytes</li>
  * </ul>
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
@@ -75,11 +75,11 @@ class Page implements Closeable {
         return file;
     }
 
-    public long append(Item item) throws IOException {
-        return appender().append(item);
+    public long append(Record record) throws IOException {
+        return appender().append(record);
     }
 
-    public Item get(long offset) throws IOException {
+    public Record get(long offset) throws IOException {
         return getter().get(offset);
     }
 
@@ -87,7 +87,7 @@ class Page implements Closeable {
         appender().flush();
     }
 
-    public Iterator<Item> iterator() {
+    public Iterator<Record> iterator() {
         return null;  // TODO iterator
     }
 
@@ -113,20 +113,20 @@ class Page implements Closeable {
         }
 
         /**
-         * Append item to the page.
+         * Append record to the page.
          * <p/>
-         * Caution: item will not sync to disk util {@link Page.Appender#flush()} invoked.
+         * Caution: record will not sync to disk util {@link Page.Appender#flush()} invoked.
          *
-         * @param item {@link Item}
+         * @param record {@link Record}
          *
-         * @return offset of the {@link Item}.
-         * @throws OverflowException if no remains for new item.
+         * @return offset of the {@link Record}.
+         * @throws OverflowException if no remains for new record.
          * @throws IOException
          */
-        public long append(Item item) throws IOException {
-            checkOverFlowIfAppend(item.length());
+        public long append(Record record) throws IOException {
+            checkOverFlowIfAppend(record.length());
             long offset = randomAccessFile.getFilePointer() - SKIP_CAPACITY_BYTES;
-            item.writeTo(randomAccessFile);
+            record.writeTo(randomAccessFile);
             return offset;
         }
 
@@ -140,7 +140,7 @@ class Page implements Closeable {
         }
 
         private void checkOverFlowIfAppend(int length) throws IOException {
-            long appendedLength = randomAccessFile.getFilePointer() + length + Item.LENGTH_BYTES;
+            long appendedLength = randomAccessFile.getFilePointer() + length + Record.LENGTH_BYTES;
             if (appendedLength > bytesCapacity) throw new OverflowException("No remains for new item.");
         }
 
@@ -153,16 +153,16 @@ class Page implements Closeable {
         }
 
         /**
-         * Get a {@link Item} by offset from a {@link Page}.
+         * Get a {@link Record} by offset from a {@link Page}.
          *
          * @param offset
          *
          * @return
          * @throws IOException
          */
-        public Item get(long offset) throws IOException {
+        public Record get(long offset) throws IOException {
             seek(offset);
-            return Item.readFrom(randomAccessFile);
+            return Record.readFrom(randomAccessFile);
         }
 
         private void seek(long offset) throws IOException {
@@ -198,11 +198,11 @@ class Page implements Closeable {
         /**
          * {@link Page} will use this value as it capacity of bytes only if it is new one or overwrite.
          *
-         * @param value should not less than {@link Page#SKIP_CAPACITY_BYTES} + {@link Item#LENGTH_BYTES},
+         * @param value should not less than {@link Page#SKIP_CAPACITY_BYTES} + {@link Record#LENGTH_BYTES},
          *              default is 67108864 (64M).
          */
         public Builder bytesCapacity(long value) {
-            long minValue = Page.SKIP_CAPACITY_BYTES + Item.LENGTH_BYTES;
+            long minValue = Page.SKIP_CAPACITY_BYTES + Record.LENGTH_BYTES;
             checkArgument(value >= minValue, "value should not less than %s", minValue);
             bytesCapacity = value;
             return this;

@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.github.zhongl.ipage.ItemTest.item;
+import static com.github.zhongl.ipage.RecordTest.item;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -49,26 +49,26 @@ public class IPageTest extends DirBase {
         page = IPage.baseOn(dir).build();
         assertThat(page.get(0L), is(nullValue()));
 
-        Item item = item("1");
-        long offset = page.append(item);
+        Record record = item("1");
+        long offset = page.append(record);
 
-        assertThat(page.get(offset), is(item));
+        assertThat(page.get(offset), is(record));
     }
 
     @Test
     public void getFromNonAppendingChunk() throws Exception {
         dir = testDir("getFromNonAppendingChunk");
         page = IPage.baseOn(dir).chunkCapacity(4096).build();
-        Item item = item("0123456789ab");
+        Record record = item("0123456789ab");
         for (int i = 0; i < 257; i++) {
-            page.append(item);
+            page.append(record);
         }
         assertThat(new File(dir, "0").exists(), is(true));
         assertThat(new File(dir, "4096").exists(), is(true)); // assert second chunk exist
 
-        assertThat(page.get(0L), is(item));
-        assertThat(page.get(4080L), is(item));
-        assertThat(page.get(4096L), is(item));
+        assertThat(page.get(0L), is(record));
+        assertThat(page.get(4080L), is(record));
+        assertThat(page.get(4096L), is(record));
     }
 
     @Test
@@ -76,9 +76,9 @@ public class IPageTest extends DirBase {
         dir = testDir("truncateByOffset");
         page = IPage.baseOn(dir).chunkCapacity(4096).build();
 
-        Item item = item("0123456789ab");
+        Record record = item("0123456789ab");
         for (int i = 0; i < 513; i++) {
-            page.append(item);
+            page.append(record);
         }
 
         assertThat(new File(dir, "0").exists(), is(true));
@@ -111,9 +111,9 @@ public class IPageTest extends DirBase {
 
         // create a page with two chunk
         page = IPage.baseOn(dir).build();
-        Item item = item("0123456789ab");
+        Record record = item("0123456789ab");
         for (int i = 0; i < 257; i++) {
-            page.append(item);
+            page.append(record);
         }
         page.close();
 
@@ -122,11 +122,11 @@ public class IPageTest extends DirBase {
 
         // load and verify
         page = IPage.baseOn(dir).build();
-        Item newItem = item("newItem");
-        long offset = page.append(newItem);
+        Record newRecord = item("newRecord");
+        long offset = page.append(newRecord);
 
-        assertThat(page.get(0L), is(item));
-        assertThat(page.get(offset), is(newItem));
+        assertThat(page.get(0L), is(record));
+        assertThat(page.get(offset), is(newRecord));
     }
 
     @Test(expected = IllegalStateException.class)

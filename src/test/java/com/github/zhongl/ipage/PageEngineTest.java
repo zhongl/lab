@@ -6,7 +6,7 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import static com.github.zhongl.ipage.ItemTest.item;
+import static com.github.zhongl.ipage.RecordTest.item;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -28,17 +28,17 @@ public class PageEngineTest extends DirBase {
         engine = PageEngine.baseOn(dir).build();
         engine.startup();
 
-        Item item = item("item");
-        Md5Key key = item.md5Key();
+        Record record = item("record");
+        Md5Key key = record.md5Key();
 
         AssertFutureCallback<Md5Key> md5KeyCallback = new AssertFutureCallback<Md5Key>();
-        AssertFutureCallback<Item> itemCallback = new AssertFutureCallback<Item>();
+        AssertFutureCallback<Record> itemCallback = new AssertFutureCallback<Record>();
 
-        engine.append(item, md5KeyCallback);
+        engine.append(record, md5KeyCallback);
         md5KeyCallback.assertResult(is(key));
 
         engine.get(key, itemCallback);
-        itemCallback.assertResult(is(item));
+        itemCallback.assertResult(is(record));
     }
 
 
@@ -56,7 +56,7 @@ public class PageEngineTest extends DirBase {
             byte[] bytes = new byte[1024];
             ByteBuffer.wrap(bytes).putInt(i);
             callback = new AssertFutureCallback<Md5Key>();
-            engine.append(new Item(bytes), callback);
+            engine.append(new Record(bytes), callback);
         }
 
         callback.awaitForDone();
@@ -70,7 +70,7 @@ public class PageEngineTest extends DirBase {
             byte[] bytes = new byte[1024];
             ByteBuffer.wrap(bytes).putInt(i);
             callback = new AssertFutureCallback<Md5Key>();
-            engine.append(new Item(bytes), callback);
+            engine.append(new Record(bytes), callback);
         }
 
         callback.awaitForDone();

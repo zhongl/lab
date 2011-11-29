@@ -13,7 +13,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
 @NotThreadSafe
-public class IPage implements Closeable, Iterable<Item> {
+public class IPage implements Closeable, Iterable<Record> {
 
     private final File baseDir;
     private final int chunkCapcity;
@@ -31,12 +31,12 @@ public class IPage implements Closeable, Iterable<Item> {
         chunkOffsetRangeList = new ChunkOfferRangeList();
     }
 
-    public long append(Item item) throws IOException {
+    public long append(Record record) throws IOException {
         try {
-            return appendingChunk().append(item);
+            return appendingChunk().append(record);
         } catch (OverflowException e) {
             newChunk();
-            return append(item);
+            return append(record);
         }
     }
 
@@ -52,7 +52,7 @@ public class IPage implements Closeable, Iterable<Item> {
         return chunk;
     }
 
-    public Item get(long offset) throws IOException {
+    public Record get(long offset) throws IOException {
         if (chunks.isEmpty()) return null;
         return chunkIn(offset).get(offset);
     }
@@ -72,12 +72,12 @@ public class IPage implements Closeable, Iterable<Item> {
     }
 
     @Override
-    public Iterator<Item> iterator() {
+    public Iterator<Record> iterator() {
         return null;  // TODO iterator
     }
 
     /**
-     * Remove {@link com.github.zhongl.ipage.Item} before the offset.
+     * Remove {@link Record} before the offset.
      *
      * @param offset
      */

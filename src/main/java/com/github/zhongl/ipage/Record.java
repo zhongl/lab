@@ -6,25 +6,25 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
 /**
- * {@link Item} is wrapper of bytes, it provids read and write operation.
+ * {@link Record} is wrapper of bytes, a minimized store unit.
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 @ThreadSafe
-public final class Item {
+public final class Record {
     public static final int LENGTH_BYTES = 4;
     private final ByteBuffer buffer;
     @Deprecated
     private final Md5Key md5Key;
 
-    public static Item readFrom(ByteBuffer byteBuffer) throws IOException {
+    public static Record readFrom(ByteBuffer byteBuffer) throws IOException {
         int length = byteBuffer.getInt();
         int limit = byteBuffer.position() + length;
         byteBuffer.limit(limit);
-        return new Item(byteBuffer.slice());
+        return new Record(byteBuffer.slice());
     }
 
-    public Item(ByteBuffer buffer) {
+    public Record(ByteBuffer buffer) {
         this.buffer = buffer;
         if (buffer.isDirect()) {
             byte[] bytes = new byte[buffer.limit()];
@@ -35,7 +35,7 @@ public final class Item {
         }
     }
 
-    public Item(byte[] bytes) {
+    public Record(byte[] bytes) {
         md5Key = Md5Key.valueOf(bytes);
         buffer = ByteBuffer.wrap(bytes);
     }
@@ -61,9 +61,9 @@ public final class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Item item = (Item) o;
+        Record record = (Record) o;
 
-        if (buffer != null ? !buffer.equals(item.buffer) : item.buffer != null) return false;
+        if (buffer != null ? !buffer.equals(record.buffer) : record.buffer != null) return false;
 
         return true;
     }
@@ -76,7 +76,7 @@ public final class Item {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("Item");
+        sb.append("Record");
         sb.append("{buffer=").append(buffer);
         sb.append('}');
         return sb.toString();
@@ -86,7 +86,7 @@ public final class Item {
         throw new UnsupportedOperationException();
     }
 
-    public static Item readFrom(RandomAccessFile randomAccessFile) {
+    public static Record readFrom(RandomAccessFile randomAccessFile) {
         throw new UnsupportedOperationException();
     }
 }
