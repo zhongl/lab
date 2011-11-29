@@ -1,8 +1,10 @@
 package com.github.zhongl.ipage;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.nio.ByteBuffer;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
+@ThreadSafe
 public final class ItemIndex {
     public static final int LENGTH = 4 + 8;
     private final int pageIndex;

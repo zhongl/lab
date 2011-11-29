@@ -3,11 +3,13 @@ package com.github.zhongl.ipage;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /** @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a> */
-public class Md5Key {
+@ThreadSafe
+public final class Md5Key {
 
     public static final int LENGTH = 16;
     private final byte[] md5Bytes;

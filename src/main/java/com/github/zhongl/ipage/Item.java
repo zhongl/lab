@@ -14,7 +14,7 @@ import java.util.Arrays;
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 @ThreadSafe
-public class Item {
+public final class Item {
     public static final long LENGTH_BYTES = 4;
     private final byte[] bytes;
     private final Md5Key md5Key;
