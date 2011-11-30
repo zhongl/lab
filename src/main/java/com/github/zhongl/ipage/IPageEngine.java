@@ -36,6 +36,42 @@ public class IPageEngine extends Engine {
         Closeables.closeQuietly(ipage);
     }
 
+    public static Builder baseOn(File dir) {
+        return new Builder(dir);
+    }
+
+    // TODO @Count monitor
+    // TODO @Elapse monitor
+    public boolean append(Record record, FutureCallback<Md5Key> callback) {
+        return submit(new Append(record, callback));
+    }
+
+    public Md5Key append(Record record) throws IOException, InterruptedException {
+        Sync<Md5Key> callback = new Sync<Md5Key>();
+        append(record, callback);
+        return callback.get();
+    }
+
+    public boolean get(Md5Key key, FutureCallback<Record> callback) {
+        return submit(new Get(key, callback));
+    }
+
+    public Record get(Md5Key key) throws IOException, InterruptedException {
+        Sync<Record> callback = new Sync<Record>();
+        get(key, callback);
+        return callback.get();
+    }
+
+    public boolean remove(Md5Key key, FutureCallback<Record> callback) {
+        return submit(new Remove(key, callback));
+    }
+
+    public Record remove(Md5Key key) throws IOException, InterruptedException {
+        Sync<Record> callback = new Sync<Record>();
+        remove(key, callback);
+        return callback.get();
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -45,20 +81,6 @@ public class IPageEngine extends Engine {
         sb.append(", index=").append(index);
         sb.append('}');
         return sb.toString();
-    }
-
-    // TODO @Count monitor
-    // TODO @Elapse monitor
-    public boolean append(Record record, FutureCallback<Md5Key> callback) {
-        return submit(new Append(record, callback));
-    }
-
-    public boolean get(Md5Key itemIndex, FutureCallback<Record> callback) {
-        return submit(new Get(itemIndex, callback));
-    }
-
-    public static Builder baseOn(File dir) {
-        return new Builder(dir);
     }
 
     private class Append extends Task<Md5Key> {
@@ -91,6 +113,24 @@ public class IPageEngine extends Engine {
         @Override
         protected Record execute() throws Throwable {
             return ipage.get(index.get(key));
+        }
+
+    }
+
+    private class Remove extends Task<Record> {
+
+        private final Md5Key key;
+
+        public Remove(Md5Key key, FutureCallback<Record> callback) {
+            super(callback);
+            this.key = key;
+        }
+
+        @Override
+        protected Record execute() throws Throwable {
+            Long offset = index.remove(key);
+            // TODO use a slide window to truncate iPage.
+            return ipage.get(offset);
         }
 
     }

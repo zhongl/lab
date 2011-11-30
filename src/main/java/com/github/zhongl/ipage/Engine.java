@@ -62,6 +62,7 @@ public abstract class Engine {
             while (true) {
                 try {
                     Runnable task = tasks.poll(timeout, timeUnit);
+                    if (task == null) continue;
                     if (task instanceof Shutdown) break;
                     task.run();
                 } catch (InterruptedException e) {

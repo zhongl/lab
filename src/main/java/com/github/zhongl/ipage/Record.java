@@ -22,7 +22,7 @@ public final class Record {
         return new Record(byteBuffer.slice());
     }
 
-    public Record(ByteBuffer buffer) {
+    private Record(ByteBuffer buffer) {
         this.buffer = buffer;
     }
 
