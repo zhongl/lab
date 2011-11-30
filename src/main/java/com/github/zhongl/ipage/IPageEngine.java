@@ -14,19 +14,24 @@ import static com.google.common.base.Preconditions.checkState;
 @ThreadSafe
 public class IPageEngine extends Engine {
 
-    static final int DEFAULT_BACKLOG = Integer.getInteger("ipage.engine.backlog", 10);
-    static final long DEFAULT_TIMEOUT = Long.getLong("ipage.engine.timeout", 500);
     static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
+    static final String IPAGE_DIR = "ipage";
+    static final String INDEX_DIR = "index";
 
     private final File dir;
     private final IPage ipage;
     private final Index index;
 
-    public IPageEngine(final File dir, int chunkCapacity, int initBucketSize) throws IOException {
-        super(DEFAULT_TIMEOUT, DEFAULT_TIME_UNIT, DEFAULT_BACKLOG);
+    public IPageEngine(
+            final File dir,
+            int chunkCapacity,
+            int initBucketSize,
+            int backlog,
+            long flushIntervalMilliseconds) throws IOException {
+        super(flushIntervalMilliseconds, DEFAULT_TIME_UNIT, backlog);
         this.dir = dir;
-        ipage = IPage.baseOn(new File(dir, "ipage")).chunkCapacity(chunkCapacity).build();
-        index = Index.baseOn(new File(dir, "index")).initBucketSize(initBucketSize).build();
+        ipage = IPage.baseOn(new File(dir, IPAGE_DIR)).chunkCapacity(chunkCapacity).build();
+        index = Index.baseOn(new File(dir, INDEX_DIR)).initBucketSize(initBucketSize).build();
     }
 
     @Override
@@ -83,6 +88,16 @@ public class IPageEngine extends Engine {
         return sb.toString();
     }
 
+    @Override
+    protected void onTick() {
+        try {
+            ipage.flush();
+            index.flush();
+        } catch (IOException e) {
+            e.printStackTrace();  // TODO log
+        }
+    }
+
     private class Append extends Task<Md5Key> {
 
         private final Record record;
@@ -129,7 +144,7 @@ public class IPageEngine extends Engine {
         @Override
         protected Record execute() throws Throwable {
             Long offset = index.remove(key);
-            // TODO use a slide window to truncate iPage.
+            // TODO use a slide window to async truncate iPage.
             return ipage.get(offset);
         }
 
@@ -138,9 +153,13 @@ public class IPageEngine extends Engine {
     public static class Builder {
 
         private static final int UNSET = -1;
+        private static final long DEFAULT_FLUSH_INTERVAL_MILLISECONDS = 10L;
+        private static final int DEFAULT_BACKLOG = 10;
         private final File dir;
         private int chunkCapacity = UNSET;
         private int initBucketSize = UNSET;
+        private long flushIntervalMilliseconds = UNSET;
+        private int backlog = UNSET;
 
         public Builder(File dir) {
             this.dir = dir;
@@ -152,16 +171,32 @@ public class IPageEngine extends Engine {
             return this;
         }
 
+        public Builder backlog(int value) {
+            checkState(backlog == UNSET, "Backlog can only set once.");
+            backlog = value;
+            return this;
+        }
+
         public Builder initBucketSize(int value) {
             checkState(initBucketSize == UNSET, "Initial bucket size can only set once.");
             initBucketSize = value;
             return this;
         }
 
+        public Builder flushByIntervalMilliseconds(long value) {
+            checkState(flushIntervalMilliseconds == UNSET, "Flush interval milliseconds can only set once.");
+            flushIntervalMilliseconds = value;
+            return this;
+        }
+
         public IPageEngine build() throws IOException {
             chunkCapacity = (chunkCapacity == UNSET) ? Chunk.DEFAULT_CAPACITY : chunkCapacity;
             initBucketSize = (initBucketSize == UNSET) ? Buckets.DEFAULT_SIZE : initBucketSize;
-            return new IPageEngine(dir, chunkCapacity, initBucketSize);
+            backlog = (backlog == UNSET) ? DEFAULT_BACKLOG : backlog;
+            flushIntervalMilliseconds =
+                    (flushIntervalMilliseconds == UNSET) ?
+                            DEFAULT_FLUSH_INTERVAL_MILLISECONDS : flushIntervalMilliseconds;
+            return new IPageEngine(dir, chunkCapacity, initBucketSize, backlog, flushIntervalMilliseconds);
         }
     }
 }

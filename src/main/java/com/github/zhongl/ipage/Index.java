@@ -72,6 +72,12 @@ public final class Index implements Closeable {
         }
     }
 
+    public void flush() throws IOException {
+        for (Buckets buckets : bucketsList) {
+            buckets.flush();
+        }
+    }
+
     private Long tryRemoveFromOthersAndMigrate(Md5Key key, boolean migrate) throws IOException {
         for (int i = 1; i < bucketsList.size(); i++) {
             Buckets buckets = bucketsList.get(i);

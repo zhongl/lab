@@ -1,13 +1,11 @@
 package com.github.zhongl.ipage;
 
-import com.google.common.io.Files;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import static com.github.zhongl.ipage.RecordTest.item;
 import static org.hamcrest.Matchers.is;
@@ -19,18 +17,18 @@ public class IPageTest extends DirBase {
     public static final boolean CLOSE = true;
     public static final boolean FLUSH = false;
 
-    private IPage page;
+    private IPage iPage;
 
     @After
     public void tearDown() throws Exception {
-        if (page != null) page.close();
+        if (iPage != null) iPage.close();
     }
 
     @Test
     public void createAndAppendAndClose() throws Exception {
         dir = testDir("createAndAppendAndClose");
         assertThat(dir.exists(), is(false));
-        page = IPage.baseOn(dir).build();
+        iPage = IPage.baseOn(dir).build();
         assertAppendAndDurableBy(CLOSE);
     }
 
@@ -38,7 +36,7 @@ public class IPageTest extends DirBase {
     public void createAndAppendAndFlush() throws Exception {
         dir = testDir("createAndAppendAndFlush");
         assertThat(dir.exists(), is(false));
-        page = IPage.baseOn(dir).build();
+        iPage = IPage.baseOn(dir).build();
         assertAppendAndDurableBy(FLUSH);
     }
 
@@ -46,46 +44,46 @@ public class IPageTest extends DirBase {
     public void getAfterAppended() throws Exception {
         dir = testDir("getAfterAppended");
 
-        page = IPage.baseOn(dir).build();
-        assertThat(page.get(0L), is(nullValue()));
+        iPage = IPage.baseOn(dir).build();
+        assertThat(iPage.get(0L), is(nullValue()));
 
         Record record = item("1");
-        long offset = page.append(record);
+        long offset = iPage.append(record);
 
-        assertThat(page.get(offset), is(record));
+        assertThat(iPage.get(offset), is(record));
     }
 
     @Test
     public void getFromNonAppendingChunk() throws Exception {
         dir = testDir("getFromNonAppendingChunk");
-        page = IPage.baseOn(dir).chunkCapacity(4096).build();
+        iPage = IPage.baseOn(dir).chunkCapacity(4096).build();
         Record record = item("0123456789ab");
         for (int i = 0; i < 257; i++) {
-            page.append(record);
+            iPage.append(record);
         }
         assertExistFile("0");
         assertExistFile("4096");
 
-        assertThat(page.get(0L), is(record));
-        assertThat(page.get(4080L), is(record));
-        assertThat(page.get(4096L), is(record));
+        assertThat(iPage.get(0L), is(record));
+        assertThat(iPage.get(4080L), is(record));
+        assertThat(iPage.get(4096L), is(record));
     }
 
     @Test
     public void truncateByOffset() throws Exception {
         dir = testDir("truncateByOffset");
-        page = IPage.baseOn(dir).chunkCapacity(4096).build();
+        iPage = IPage.baseOn(dir).chunkCapacity(4096).build();
 
         Record record = item("0123456789ab");
         for (int i = 0; i < 513; i++) {
-            page.append(record);
+            iPage.append(record);
         }
 
         assertExistFile("0");
         assertExistFile("4096");
         assertExistFile("8192");
 
-        page.truncate(4112L);
+        iPage.truncate(4112L);
 
         assertNotExistFile("0");
         assertNotExistFile("4096");
@@ -109,24 +107,24 @@ public class IPageTest extends DirBase {
     public void loadExist() throws Exception {
         dir = testDir("loadExist");
 
-        // create a page with two chunk
-        page = IPage.baseOn(dir).build();
+        // create a iPage with two chunk
+        iPage = IPage.baseOn(dir).build();
         Record record = item("0123456789ab");
         for (int i = 0; i < 257; i++) {
-            page.append(record);
+            iPage.append(record);
         }
-        page.close();
+        iPage.close();
 
         assertExistFile("0");
         assertExistFile("4096");
 
         // load and verify
-        page = IPage.baseOn(dir).build();
+        iPage = IPage.baseOn(dir).build();
         Record newRecord = item("newRecord");
-        long offset = page.append(newRecord);
+        long offset = iPage.append(newRecord);
 
-        assertThat(page.get(0L), is(record));
-        assertThat(page.get(offset), is(newRecord));
+        assertThat(iPage.get(0L), is(record));
+        assertThat(iPage.get(offset), is(newRecord));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -149,42 +147,15 @@ public class IPageTest extends DirBase {
     }
 
     private void assertAppendAndDurableBy(boolean close) throws IOException {
-        assertThat(page.append(item("item1")), is(0L));
-        assertThat(page.append(item("item2")), is(9L));
+        assertThat(iPage.append(item("item1")), is(0L));
+        assertThat(iPage.append(item("item2")), is(9L));
         if (close) {
-            page.close();
+            iPage.close();
         } else {
-            page.flush();
+            iPage.flush();
         }
-        assertPageContentOnDiskIs("item1".getBytes(), "item2".getBytes());
-    }
-
-    private byte[] toBytes(byte[][] items) {
-        int lengthBytes = 4;
-        int length = 0;
-
-        for (byte[] item : items) {
-            length += item.length + lengthBytes;
-        }
-
-        byte[] union = new byte[length];
-
-        ByteBuffer buffer = ByteBuffer.wrap(union);
-
-        for (byte[] item : items) {
-            buffer.putInt(item.length);
-            buffer.put(item);
-        }
-        return union;
-    }
-
-
-    private void assertPageContentOnDiskIs(byte[]... items) throws IOException {
-        byte[] expect = toBytes(items);
-        byte[] actual = new byte[expect.length];
-        byte[] all = Files.toByteArray(new File(dir, "0"));
-        System.arraycopy(all, 0, actual, 0, actual.length);
-        assertThat(actual, is(expect));
+        byte[] expect = ChunkContentUtils.concatToChunkContentWith("item1".getBytes(), "item2".getBytes());
+        FileContentAsserter.of(new File(dir, "0")).assertIs(expect);
     }
 
 }

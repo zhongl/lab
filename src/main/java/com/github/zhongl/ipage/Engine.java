@@ -22,11 +22,13 @@ public abstract class Engine {
     private final long timeout;
     private final TimeUnit timeUnit;
     private final Core core;
+    private final Timer timer;
 
-    public Engine(long timeout, TimeUnit unit, int backlog) {
-        this.timeout = timeout;
+    public Engine(long tickPeriod, TimeUnit unit, int backlog) {
+        this.timeout = tickPeriod / 2;
         this.timeUnit = unit;
         this.tasks = new LinkedBlockingQueue<Runnable>(backlog);
+        timer = new Timer(unit.toNanos(tickPeriod));
         core = new Core();
     }
 
@@ -62,6 +64,7 @@ public abstract class Engine {
             while (true) {
                 try {
                     Runnable task = tasks.poll(timeout, timeUnit);
+                    if (timer.poll()) onTick(); // try tick
                     if (task == null) continue;
                     if (task instanceof Shutdown) break;
                     task.run();
@@ -74,6 +77,8 @@ public abstract class Engine {
         }
 
     }
+
+    protected void onTick() {}
 
     private static class Shutdown implements Runnable {
         @Override
