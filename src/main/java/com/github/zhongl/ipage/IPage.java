@@ -102,7 +102,7 @@ public class IPage implements Closeable, Iterable<Record> {
         final StringBuilder sb = new StringBuilder();
         sb.append("IPage");
         sb.append("{baseDir=").append(baseDir);
-        sb.append(", chunkCapcity=").append(chunkCapcity);
+        sb.append(", chunkCapacity=").append(chunkCapcity);
         sb.append(", chunks=").append(chunks);
         sb.append('}');
         return sb.toString();
@@ -110,11 +110,10 @@ public class IPage implements Closeable, Iterable<Record> {
 
     public static final class Builder {
 
-        private static final int MIN_CHUNK_CAPACITY = 4096;
         private static final int UNSET = -1;
 
         private final File baseDir;
-        private int chunkCapcity = UNSET;
+        private int chunkCapacity = UNSET;
 
         public Builder(File dir) {
             if (!dir.exists()) checkState(dir.mkdirs(), "Can not create directory: %s", dir);
@@ -123,16 +122,16 @@ public class IPage implements Closeable, Iterable<Record> {
         }
 
         public Builder chunkCapacity(int value) {
-            checkState(chunkCapcity == UNSET, "Chunk capacity can only set once.");
-            checkArgument(value >= MIN_CHUNK_CAPACITY, "Chunk capacity should not less than %s", MIN_CHUNK_CAPACITY);
-            chunkCapcity = value;
+            checkState(chunkCapacity == UNSET, "Chunk capacity can only set once.");
+            checkArgument(value >= Chunk.DEFAULT_CAPACITY, "Chunk capacity should not less than %s", Chunk.DEFAULT_CAPACITY);
+            chunkCapacity = value;
             return this;
         }
 
         public IPage build() throws IOException {
-            chunkCapcity = (chunkCapcity == UNSET) ? MIN_CHUNK_CAPACITY : chunkCapcity;
+            chunkCapacity = (chunkCapacity == UNSET) ? Chunk.DEFAULT_CAPACITY : chunkCapacity;
             List<Chunk> chunks = validateAndLoadExistChunks();
-            return new IPage(baseDir, chunkCapcity, chunks);
+            return new IPage(baseDir, chunkCapacity, chunks);
         }
 
         private List<Chunk> validateAndLoadExistChunks() throws IOException {
@@ -142,7 +141,7 @@ public class IPage implements Closeable, Iterable<Record> {
             ArrayList<Chunk> chunks = new ArrayList<Chunk>(files.length);
             for (File file : files) {
                 // TODO validate chunks
-                Chunk chunk = new Chunk(Long.parseLong(file.getName()), file, chunkCapcity);
+                Chunk chunk = new Chunk(Long.parseLong(file.getName()), file, chunkCapacity);
                 chunks.add(0, chunk); // reverse order to make sure the appending chunk at first.
             }
             return chunks;

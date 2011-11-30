@@ -14,8 +14,6 @@ import java.nio.ByteBuffer;
 public final class Record {
     public static final int LENGTH_BYTES = 4;
     private final ByteBuffer buffer;
-    @Deprecated
-    private final Md5Key md5Key;
 
     public static Record readFrom(ByteBuffer byteBuffer) throws IOException {
         int length = byteBuffer.getInt();
@@ -26,17 +24,9 @@ public final class Record {
 
     public Record(ByteBuffer buffer) {
         this.buffer = buffer;
-        if (buffer.isDirect()) {
-            byte[] bytes = new byte[buffer.limit()];
-            buffer.get(bytes);
-            md5Key = Md5Key.valueOf(bytes);
-        } else {
-            md5Key = Md5Key.valueOf(buffer.array());
-        }
     }
 
     public Record(byte[] bytes) {
-        md5Key = Md5Key.valueOf(bytes);
         buffer = ByteBuffer.wrap(bytes);
     }
 
@@ -44,17 +34,11 @@ public final class Record {
         return buffer.limit();
     }
 
-    @Deprecated
-    public Md5Key md5Key() {
-        return md5Key;
-    }
-
     public int writeTo(ByteBuffer buffer) throws IOException {
         this.buffer.position(0);
         buffer.putInt(length()).put(this.buffer);
         return LENGTH_BYTES + length();
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -88,5 +72,15 @@ public final class Record {
 
     public static Record readFrom(RandomAccessFile randomAccessFile) {
         throw new UnsupportedOperationException();
+    }
+
+    byte[] toBytes() {
+        if (buffer.isDirect()) {
+            byte[] bytes = new byte[buffer.limit()];
+            buffer.get(bytes);
+            return bytes;
+        } else {
+            return buffer.array();
+        }
     }
 }

@@ -25,6 +25,7 @@ import static java.nio.channels.FileChannel.MapMode.READ_WRITE;
 @NotThreadSafe
 final class Chunk implements Closeable {
 
+    static final int DEFAULT_CAPACITY = 4096; // 4k
     private final File file;
     private final long capacity;
     private final long beginPositionInIPage;

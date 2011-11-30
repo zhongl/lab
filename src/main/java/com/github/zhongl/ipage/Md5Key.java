@@ -14,6 +14,12 @@ public final class Md5Key {
     public static final int LENGTH = 16;
     private final byte[] md5Bytes;
 
+    public static Md5Key readFrom(ByteBuffer buffer) {
+        byte[] bytes = new byte[LENGTH];
+        buffer.get(bytes);
+        return new Md5Key(bytes);
+    }
+
     private Md5Key(byte[] md5Bytes) {
         this.md5Bytes = md5Bytes;
     }
@@ -44,9 +50,8 @@ public final class Md5Key {
         return Arrays.hashCode(md5Bytes);
     }
 
-    public static Md5Key readFrom(ByteBuffer buffer) {
-        byte[] bytes = new byte[LENGTH];
-        buffer.get(bytes);
+    public static Md5Key valueOf(Record record) {
+        byte[] bytes = DigestUtils.md5(record.toBytes());
         return new Md5Key(bytes);
     }
 

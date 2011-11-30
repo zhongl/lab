@@ -1,2 +1,4 @@
-+ setup a benchmark of store;
-+ use lucene index the record of page;
+- benchmark of store;
+- auto-growth page;
+- auto-growth index;
++ benchmark of iPage;
