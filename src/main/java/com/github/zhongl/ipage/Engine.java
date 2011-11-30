@@ -29,7 +29,7 @@ public abstract class Engine {
         this.timeUnit = unit;
         this.tasks = new LinkedBlockingQueue<Runnable>(backlog);
         timer = new Timer(unit.toNanos(tickPeriod));
-        core = new Core();
+        core = new Core(getClass().getSimpleName());
     }
 
     public void startup() {
@@ -56,7 +56,15 @@ public abstract class Engine {
         return tasks.offer(task);
     }
 
+    protected final void resetTick() {
+        timer.reset();
+    }
+
     private class Core extends Thread {
+
+        public Core(String name) {
+            super(name);
+        }
 
         @Override
         public void run() {
@@ -64,7 +72,7 @@ public abstract class Engine {
             while (true) {
                 try {
                     Runnable task = tasks.poll(timeout, timeUnit);
-                    if (timer.poll()) onTick(); // try tick
+                    if (timer.timeout()) onTick(); // try tick
                     if (task == null) continue;
                     if (task instanceof Shutdown) break;
                     task.run();

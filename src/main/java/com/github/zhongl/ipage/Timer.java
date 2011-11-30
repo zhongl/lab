@@ -10,16 +10,18 @@ class Timer {
         this.period = period;
     }
 
-    public boolean poll() {
-        if (lastPoll == 0) { // first poll
+    public boolean timeout() {
+        if (lastPoll == 0) { // first timeout
             lastPoll = System.nanoTime();
             return false;
         }
         long now = System.nanoTime();
         elpase += now - lastPoll;
         lastPoll = now;
-        boolean timeout = elpase >= period;
-        if (timeout) elpase = 0L; // reset elpase
-        return timeout;
+        return elpase >= period;
+    }
+
+    public void reset() {
+        elpase = 0L;
     }
 }

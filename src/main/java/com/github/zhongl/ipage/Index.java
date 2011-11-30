@@ -78,6 +78,17 @@ public final class Index implements Closeable {
         }
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Index");
+        sb.append("{baseDir=").append(baseDir);
+        sb.append(", initBucketSize=").append(initBucketSize);
+        sb.append(", bucketsList=").append(bucketsList);
+        sb.append('}');
+        return sb.toString();
+    }
+
     private Long tryRemoveFromOthersAndMigrate(Md5Key key, boolean migrate) throws IOException {
         for (int i = 1; i < bucketsList.size(); i++) {
             Buckets buckets = bucketsList.get(i);

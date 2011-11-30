@@ -93,6 +93,7 @@ final class Chunk implements Closeable {
     }
 
     public void flush() throws IOException {
+        if (mappedByteBuffer == null) return;
         mappedByteBuffer.force();
     }
 

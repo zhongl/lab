@@ -1,6 +1,7 @@
 package com.github.zhongl.ipage;
 
 import com.github.zhongl.ipage.benchmark.*;
+import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +18,7 @@ public class IPageEngineBenchmark extends DirBase {
     @After
     public void tearDown() throws Exception {
         engine.shutdown();
+        engine.awaitForShutdown(Long.MAX_VALUE);
     }
 
     @Override
@@ -24,7 +26,12 @@ public class IPageEngineBenchmark extends DirBase {
     public void setUp() throws Exception {
         super.setUp();
         dir = testDir("benchmark");
-        engine = IPageEngine.baseOn(dir).initBucketSize(100).build();
+        engine = IPageEngine.baseOn(dir)
+                .initBucketSize(100)
+                .flushByCount(1000)
+                .flushByIntervalMilliseconds(500L)
+                .chunkCapacity(1024 * 1024 * 32)
+                .build();
         engine.startup();
     }
 
@@ -36,13 +43,13 @@ public class IPageEngineBenchmark extends DirBase {
         CallableFactory removeFactory = new RemoveFactory(engine);
 
         CallableFactory concatCallableFactory = new ConcatCallableFactory(
-                new FixInstanceSizeFactory(100, addFactory),
-                new FixInstanceSizeFactory(100, getFactory),
-                new FixInstanceSizeFactory(100, removeFactory)
+                new FixInstanceSizeFactory(10000, addFactory),
+                new FixInstanceSizeFactory(10000, getFactory),
+                new FixInstanceSizeFactory(10000, removeFactory)
         );
 
         Collection<Statistics> statisticses =
-                new Benchmarker(concatCallableFactory, 1, 300).benchmark(); // setup concurrent 1, because engine is not thread-safe
+                new Benchmarker(concatCallableFactory, 8, 30000).benchmark(); // setup concurrent 1, because engine is not thread-safe
         for (Statistics statisticse : statisticses) {
             System.out.println(statisticse);
         }
@@ -55,7 +62,7 @@ public class IPageEngineBenchmark extends DirBase {
         public OperationFactory(IPageEngine engine) {this.engine = engine;}
 
         protected Record genRecord() {
-            return new Record(Ints.toByteArray(count++));
+            return new Record(Bytes.concat(Ints.toByteArray(count++), new byte[1020]));
         }
     }
 

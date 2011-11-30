@@ -88,6 +88,15 @@ final class Buckets implements Closeable {
         // TODO cleanupIfAllKeyRemoved
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Buckets");
+        sb.append("{file=").append(file);
+        sb.append('}');
+        return sb.toString();
+    }
+
     /**
      * {@link Buckets.Bucket} has 163
      * {@link Buckets.Bucket.Slot} for storing tuple of

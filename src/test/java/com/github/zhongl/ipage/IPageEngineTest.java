@@ -51,7 +51,9 @@ public class IPageEngineTest extends DirBase {
 
         engine = IPageEngine.baseOn(dir)
                 .initBucketSize(1)
-                .flushByIntervalMilliseconds(100L).build();
+                .flushByCount(1000)
+                .flushByIntervalMilliseconds(100L)
+                .build();
         engine.startup();
 
 
@@ -68,6 +70,33 @@ public class IPageEngineTest extends DirBase {
 
     @Test
     public void flushByCount() throws Exception {
+        dir = testDir("flushByInterval");
+        File indexFile = new File(new File(dir, IPageEngine.INDEX_DIR), "0");
+        File iPageFile = new File(new File(dir, IPageEngine.IPAGE_DIR), "0");
+
+        engine = IPageEngine.baseOn(dir)
+                .initBucketSize(1)
+                .flushByCount(2)
+                .flushByIntervalMilliseconds(1000L)
+                .build();
+        engine.startup();
+
+
+        byte[] bytes1 = "record1".getBytes();
+        byte[] bytes2 = "record2".getBytes();
+        Record record1 = new Record(bytes1);
+        Record record2 = new Record(bytes2);
+
+        engine.append(record1);
+        engine.append(record2);
+
+        byte[] indexContent = Bytes.concat(
+                new byte[] {1}, md5KeyBytesOf(record1), Longs.toByteArray(0L),
+                new byte[] {1}, md5KeyBytesOf(record2), Longs.toByteArray(11L)
+        );
+        FileContentAsserter.of(indexFile).assertIs(indexContent);
+        FileContentAsserter.of(iPageFile).assertIs(concatToChunkContentWith(bytes1, bytes2));
+
         // TODO flushByCount
     }
 

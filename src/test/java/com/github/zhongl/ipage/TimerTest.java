@@ -16,7 +16,10 @@ public class TimerTest {
         int count = 0;
         for (int i = 0; i < 11; i++) {
             Thread.sleep(5L);
-            if (timer.poll()) count++;
+            if (timer.timeout()) {
+                count++;
+                timer.reset();
+            }
         }
 
         assertThat(count, is(5));
