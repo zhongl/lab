@@ -3,14 +3,10 @@ package com.github.zhongl.benchmarker;
 import com.google.common.base.Stopwatch;
 
 import java.util.Collection;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * {@link Benchmarker} can collect performance benchmarks
- * of {@link com.taobao.common.store.Store} implement.
  *
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
@@ -24,7 +20,8 @@ public final class Benchmarker {
     public Benchmarker(CallableFactory callableFactory, int concurrent, int times) {
         this.callableFactory = callableFactory;
         this.times = times;
-        executorService = Executors.newFixedThreadPool(concurrent);
+        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(256); // avoid memory problem
+        executorService = new ThreadPoolExecutor(concurrent, concurrent, 1L, TimeUnit.MINUTES, workQueue);
         latch = new CountDownLatch(times);
         collector = new StatisticsCollector();
     }
