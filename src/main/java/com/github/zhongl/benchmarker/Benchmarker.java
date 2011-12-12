@@ -12,10 +12,10 @@ import java.util.concurrent.*;
  */
 public final class Benchmarker {
     private final ExecutorService executorService;
-    private final CountDownLatch latch;
     private final StatisticsCollector collector;
     private final int times;
     private final CallableFactory callableFactory;
+    private final Progress progress;
 
     public Benchmarker(CallableFactory callableFactory, int concurrent, int times) {
         this.callableFactory = callableFactory;
@@ -23,7 +23,7 @@ public final class Benchmarker {
         BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(256); // avoid memory problem
         ThreadPoolExecutor.CallerRunsPolicy policy = new ThreadPoolExecutor.CallerRunsPolicy();
         executorService = new ThreadPoolExecutor(concurrent, concurrent, 1L, TimeUnit.MINUTES, workQueue, policy);
-        latch = new CountDownLatch(times);
+        progress = new Progress(times, System.out, 1);
         collector = new StatisticsCollector();
     }
 
@@ -32,7 +32,8 @@ public final class Benchmarker {
         for (int i = 0; i < times; i++) {
             executorService.submit(new Task(callableFactory.create()));
         }
-        latch.await();
+
+        progress.awaitAndprintStatus();
         executorService.shutdown();
         return collector.haltAndGetStatistics();
     }
@@ -55,7 +56,7 @@ public final class Benchmarker {
             } catch (Exception e) {
                 collector.error(name, e);
             } finally {
-                latch.countDown();
+                progress.countDown();
             }
         }
     }
