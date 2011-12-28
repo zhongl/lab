@@ -20,7 +20,7 @@ public final class Benchmarker {
     public Benchmarker(CallableFactory callableFactory, int concurrent, int times) {
         this.callableFactory = callableFactory;
         this.times = times;
-        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(256); // avoid memory problem
+        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(times); // avoid memory problem
         ThreadPoolExecutor.CallerRunsPolicy policy = new ThreadPoolExecutor.CallerRunsPolicy();
         executorService = new ThreadPoolExecutor(concurrent, concurrent, 1L, TimeUnit.MINUTES, workQueue, policy);
         progress = new Progress(times, System.out, 1);
