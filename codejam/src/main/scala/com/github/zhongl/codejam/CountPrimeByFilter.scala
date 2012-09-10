@@ -26,8 +26,8 @@ object CountPrimeByFilter extends App {
     @tailrec
     def setNonPrimeByProductOf(i: Int, j: Int) {
       i * j match {
-        case index if (index <= num - 1) => filter.set(index); setNonPrimeByProductOf(i, j + 1)
-        case _                           =>
+        case index if (index < num) => filter.set(index); setNonPrimeByProductOf(i, j + 1)
+        case _                      =>
       }
     }
 
