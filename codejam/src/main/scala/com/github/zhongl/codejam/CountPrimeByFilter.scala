@@ -33,7 +33,7 @@ object CountPrimeByFilter extends App {
 
     2 until maxValidateNum foreach { setNonPrimeByProductOf(_, 2) }
 
-    filter.length() - filter.cardinality()
+    num - filter.cardinality()
   }
 
   private def time[T](fun: => T) = {
