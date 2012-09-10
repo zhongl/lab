@@ -3,7 +3,7 @@ package com.github.zhongl.codejam
 import collection.mutable.ArrayBuffer
 import System.{currentTimeMillis => now}
 
-object Prime extends App {
+object CountPrimeByDivision extends App {
 
   val num = args match {
     case Array(n) => n.toInt
