@@ -5,7 +5,4 @@ resolvers ++= Seq(
     "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository"
 )
 
-libraryDependencies ++= Seq(
-   "com.google.caliper" % "caliper" % "1.0-SNAPSHOT"
-)
 
