@@ -31,7 +31,7 @@ object CountPrimeByFilter extends App {
       }
     }
 
-    2 until maxValidateNum foreach { setNonPrimeByProductOf(_, 2) }
+    2 until maxValidateNum foreach { i => setNonPrimeByProductOf(i, i) }
 
     num - filter.cardinality()
   }

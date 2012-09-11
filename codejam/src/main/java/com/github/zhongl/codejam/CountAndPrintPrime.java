@@ -38,7 +38,7 @@ class PrimeDetector {
         filter.set(0); // 0 is not prime
         int sqrt = (int) Math.sqrt(number);
         for (int i = 2; i < sqrt + 1; i++) {
-            for (int j = 2; ; j++) {
+            for (int j = i; ; j++) {
                 int k = i * j;
                 if (k > number) break;
                 filter.set(k);
