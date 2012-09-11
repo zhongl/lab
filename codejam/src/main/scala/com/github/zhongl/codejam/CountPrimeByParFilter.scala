@@ -9,18 +9,18 @@ import actors.Actor._
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
  */
 object CountPrimeByParFilter extends App {
-  val num = args match {
-    case Array(n) => n.toInt
-    case _        => throw new IllegalArgumentException("Usage: CMD <num>")
+  val (num, parallels) = args match {
+    case Array(n, p) => (n.toInt, p.toInt)
+    case Array(n)    => (n.toInt, 8)
+    case _           => throw new IllegalArgumentException("Usage: CMD <num> <parallels>")
   }
 
   val begin = now
-  val count = countPrimeIn(num)
+  val count = countPrimeIn(num, parallels)
   printf("the count of primes from 1 to %1$s is: %2$s, time elapse: %3$,d ms\n", num, count, now - begin)
 
-  def countPrimeIn(num: Int) = {
+  def countPrimeIn(num: Int, parallels: Int) = {
     val maxValidateNum = math.sqrt(num).toInt + 1
-    val parallels = sys.runtime.availableProcessors() * 2
     val main = self
 
     0 until parallels foreach {
