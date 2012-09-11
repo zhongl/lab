@@ -3,8 +3,7 @@ package com.github.zhongl.codejam
 import java.util
 import annotation.tailrec
 import System.{currentTimeMillis => now}
-import util.concurrent.atomic.AtomicInteger
-import util.concurrent.CountDownLatch
+import actors.Actor._
 
 /**
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
@@ -22,44 +21,33 @@ object CountPrimeByParFilter extends App {
   def countPrimeIn(num: Int) = {
     val maxValidateNum = math.sqrt(num).toInt + 1
     val parallels = sys.runtime.availableProcessors() * 2
-    val latch = new CountDownLatch(parallels)
-    val corp = new AtomicInteger(2)
+    val main = self
 
-    val ts = 0 until parallels map {
-      i =>
+    0 until parallels foreach {
+      n => actor {
+        val filter = new util.BitSet(num)
+        filter.set(0) // 0 is not a prime
+        filter.set(1) // 1 is not a prime
 
-        val t = new Thread {
-          val filter = new util.BitSet(num)
-
-          filter.set(0) // 0 is not a prime
-          filter.set(1)
-
-          // 1 is not a prime
-
-          @tailrec
-          def setNonPrimeByProductOf(i: Int, j: Int) {
-            i * j match {
-              case index if (index < num) => filter.set(index); setNonPrimeByProductOf(i, j + 1)
-              case _                      =>
-            }
+        @tailrec
+        def setNonPrimeByProductOf(i: Int, j: Int) {
+          i * j match {
+            case index if (index < num) => filter.set(index); setNonPrimeByProductOf(i, j + 1)
+            case _                      =>
           }
-
-          var n = corp.getAndIncrement
-          while (n < maxValidateNum) {
-            setNonPrimeByProductOf(n, n)
-            n = corp.getAndIncrement
-          }
-
-          latch.countDown()
         }
+        (2 + n) until maxValidateNum by parallels foreach { i => setNonPrimeByProductOf(i, i) }
+        main ! filter
+      }
 
-        t.start()
-        t
     }
 
-    latch.await()
-
-    val filter = ts.foldLeft(new util.BitSet()) { (f, t) => f.or(t.filter); f }
+    val filter: util.BitSet = new util.BitSet(num)
+    var running = true
+    var finished = 0
+    while (running) {
+      receive { case f: util.BitSet => filter or f; finished += 1; if (finished == parallels) running = false }
+    }
 
     num - filter.cardinality()
   }
