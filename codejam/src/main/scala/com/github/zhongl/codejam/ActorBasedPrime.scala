@@ -1,9 +1,8 @@
 package com.github.zhongl.codejam
 
 import System.{currentTimeMillis => now}
-import actors.Actor._
 import collection.mutable.ArrayBuffer
-import actors.Actor
+import actors.{Scheduler, Actor, Reactor}
 
 /**
  * @author <a href="mailto:zhong.lunfu@gmail.com">zhongl<a>
@@ -18,16 +17,16 @@ object ActorBasedPrime extends App {
 
   val (elapse, count) = time { countPrimeIn(num, parallels) }
   printf("the count of primes from 1 to %1$s is: %2$s, time elapse: %3$,d ms\n", num, count, elapse)
+  Scheduler.shutdown()
 
   private def countPrimeIn(num: Int, parallels: Int) = {
     var count = 1 // include num number: 2
     var finished = 0
     var running = true
-
-    val workers = splitRange(3, num, parallels) map { worker(_, self) }
+    val workers = splitRange(3, num, parallels) map { new Worker(_, Actor.self) }
 
     while (running) {
-      receive {
+      Actor.receive {
         case FoundPrime(n) => workers foreach { _ ! FoundPrime(n) }; count += 1
         case Finish        => finished += 1; if (finished == parallels) running = false
       }
@@ -45,28 +44,31 @@ object ActorBasedPrime extends App {
     0 until parts map { i => (begin(i), end(i)) }
   }
 
-  private def worker(range: (Int, Int), main: Actor) = actor {
+  private class Worker(range: (Int, Int), main: Actor) extends Reactor[Any] {
     val (from, to) = range
-    val primes = ArrayBuffer(2)
-    var max = 2
+    val primes     = new ArrayBuffer[Int]
+    var max        = 2
 
-    @inline def findDivisibleOf(value: Int) = {
+    @inline def findDivisibleOf(value: Int): Option[Int] = {
       val divisible = value % (_: Int) == 0
       primes find { divisible } orElse { max until value find { divisible } }
     }
 
     def finish() { main ! Finish; printf("Range(%1$d, %2$d) is over.\n", from, to); exit() }
 
-    self ! CheckPrime(from)
-
-    loop {
-      react {
-        case FoundPrime(n) if (n < to) => primes += n; max = math.max(max, n)
-        case CheckPrime(n)             =>
-          if (findDivisibleOf(n).isEmpty) main ! FoundPrime(n)
-          if (n + 1 < to) self ! CheckPrime(n + 1) else finish()
+    def act() {
+      loop {
+        react {
+          case FoundPrime(n) if (n < to) => primes += n; max = math.max(max, n)
+          case CheckPrime(n)             =>
+            if (findDivisibleOf(n).isEmpty) main ! FoundPrime(n)
+            if (n + 1 < to) this ! CheckPrime(n + 1) else finish()
+        }
       }
     }
+
+    start()
+    Worker.this ! CheckPrime(from)
   }
 
   private def time[T](fun: => T) = {
@@ -75,10 +77,10 @@ object ActorBasedPrime extends App {
     (now - begin, res)
   }
 
-  case class Finish()
+  private case class Finish()
 
-  case class FoundPrime(num: Int)
+  private case class FoundPrime(num: Int)
 
-  case class CheckPrime(num: Int)
+  private case class CheckPrime(num: Int)
 
 }
