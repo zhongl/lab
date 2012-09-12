@@ -35,7 +35,6 @@ object CountPrimeByParFilter2 extends App {
   }
 
   private def countPrimeBetween(from: Int, to: Int) = {
-    println(from, to)
     val filter = new java.util.BitSet(to - from)
 
     @tailrec def setNonPrimeBy(i: Int, j: Int): Option[_] = i * j match {
@@ -50,7 +49,6 @@ object CountPrimeByParFilter2 extends App {
     } else None
 
     start(2)
-    //    println(filter)
     to - from - filter.cardinality()
   }
 

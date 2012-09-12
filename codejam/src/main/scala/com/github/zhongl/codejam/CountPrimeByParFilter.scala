@@ -19,7 +19,7 @@ object CountPrimeByParFilter extends App {
   val count = countPrimeIn(num, parallels)
   printf("the count of primes from 1 to %1$s is: %2$s, time elapse: %3$,d ms\n", num, count, now - begin)
 
-  def countPrimeIn(num: Int, parallels: Int) = {
+  private def countPrimeIn(num: Int, parallels: Int) = {
     val maxValidateNum = math.sqrt(num).toInt + 1
     val main = self
 
@@ -38,11 +38,9 @@ object CountPrimeByParFilter extends App {
       }
     }
 
-    @inline def income = receive { case f: Bits => f }
-
     @tailrec def reduce(filter: Bits, finished: Int): Bits =
-      if (finished == parallels) filter else {filter or income; reduce(filter, finished + 1) }
+      if (finished == parallels) filter else {filter or ?.asInstanceOf[Bits]; reduce(filter, finished + 1) }
 
-    num - reduce(income, 1).cardinality()
+    num - reduce(?.asInstanceOf[Bits], 1).cardinality()
   }
 }
