@@ -11,7 +11,7 @@ import actors.Actor._
 object CountPrimeByParFilter2 extends App {
   val (num, parallels) = args match {
     case Array(n, p) => (n.toInt, p.toInt)
-    case Array(n)    => (n.toInt, 8)
+    case Array(n)    => (n.toInt, sys.runtime.availableProcessors() * 2)
     case _           => throw new IllegalArgumentException("Usage: CMD <num> <parallels>")
   }
 
