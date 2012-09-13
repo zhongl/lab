@@ -20,8 +20,8 @@ object CountPrimeByParFilter2 extends App {
   printf("the count of primes from 1 to %1$s is: %2$s, time elapse: %3$,d ms\n", num, count, now - begin)
 
   private def countPrimeIn(num: Int, parallels: Int) = {
-    if ((num - 3) / parallels <= 1) {
-      countPrimeBetween(3, num)
+    if ((num - 3) / parallels < 1000000) {
+      countPrimeBetween(2, num)
     } else {
       val main = self
 
