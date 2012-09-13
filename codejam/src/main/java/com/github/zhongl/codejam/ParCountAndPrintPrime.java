@@ -4,7 +4,6 @@ import static java.lang.Integer.parseInt;
 import static java.lang.System.currentTimeMillis;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -87,7 +86,7 @@ public class ParCountAndPrintPrime {
 
         private final int from;
         private final int to;
-        private final BitSet filter;
+        private final FastBitSet filter;
 
         public PrimeDetector(int number) {
             this(0, number);
@@ -96,8 +95,8 @@ public class ParCountAndPrintPrime {
         public PrimeDetector(int from, int to) {
             this.from = from;
             this.to = to;
-            this.filter = new BitSet(to - from);
-            if (from == 0) filter.set(0); // 0 is not a prime
+            this.filter = new FastBitSet(to - from);
+            if (from == 0) filter.fastSet(0); // 0 is not a prime
         }
 
         @Override
@@ -112,7 +111,7 @@ public class ParCountAndPrintPrime {
                     int k = i * j;
                     if (k > to - 1) break;
                     if (k < from || j < i) continue;
-                    filter.set(k - from);
+                    filter.fastSet(k - from);
                 }
             }
         }
@@ -128,4 +127,49 @@ public class ParCountAndPrintPrime {
         }
     }
 
+    static class FastBitSet {
+        /* Used to shift left or right for a partial word mask */
+        private static final long WORD_MASK = 0xffffffffffffffffL;
+
+        protected long[] bits;
+        protected int wlen; // number of words (elements) used in the array
+
+        public FastBitSet(long numBits) {
+            bits = new long[bits2words(numBits)];
+            wlen = bits.length;
+        }
+
+        public static int bits2words(long numBits) {
+            return (int) (((numBits - 1) >>> 6) + 1);
+        }
+
+        public void fastSet(int index) {
+            int wordNum = index >> 6; // div 64
+            int bit = index & 0x3f; // mod 64
+            long bitmask = 1L << bit;
+            bits[wordNum] |= bitmask;
+        }
+
+        public int cardinality() {
+            int sum = 0;
+            for (int i = 0; i < wlen; i++)
+                sum = Long.bitCount(bits[i]);
+            return sum;
+        }
+
+        public int nextClearBit(int index) {
+            int i = index >> 6;
+            if (i >= wlen)
+                return index;
+
+            long word = ~bits[i] & (WORD_MASK << index);
+            while (true) {
+                if (word != 0)
+                    return (i << 6) + Long.numberOfTrailingZeros(word);
+                if (++i == wlen)
+                    return wlen << 6;
+                word = ~bits[i];
+            }
+        }
+    }
 }
