@@ -13,8 +13,8 @@ import static org.objectweb.asm.Opcodes.ASM4;
 public class InvokeVirtualBySystemProperties {
 
     public static void main(String[] args) throws Exception {
-//        final Advice advice = new Advice();
-//        System.getProperties().put("advice", advice);
+        final Advice advice = new Advice();
+        System.getProperties().put("advice", advice);
 
         ClassWriter cw = new ClassWriter(0);
         ClassReader cr = new ClassReader("X");
